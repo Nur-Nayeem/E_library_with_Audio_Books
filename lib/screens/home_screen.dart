@@ -4,14 +4,11 @@ import 'package:audiobook_e_library/screens/book_details.dart';
 import 'package:audiobook_e_library/screens/book_listing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../../core/book-model/data.dart';
 import '../core/book_list/auto_swaip_books.dart';
 import '../core/book_list/trending_book_cards_widget.dart';
 import '../core/book_list/fetch_books.dart';
-import '../core/book_list/not_used_book_card_widget.dart';
 import '../core/style/app_double_text.dart';
-import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart';
 import 'category_books_screen.dart';
 

@@ -1,4 +1,5 @@
 class Booksdata {
+  final int id; // Added id field
   String bookname;
   String authorName;
   String imagePath;
@@ -11,6 +12,7 @@ class Booksdata {
   late final int? totalPages;
 
   Booksdata({
+    required this.id, // Make sure to require the id
     required this.authorName,
     required this.bookname,
     required this.pdfPath,
@@ -25,6 +27,7 @@ class Booksdata {
 
   factory Booksdata.fromMap(Map<String, dynamic> map) {
     return Booksdata(
+      id: map['id'] as int, // Assuming your Supabase table has an 'id' field of type uuid/String
       bookname: map['bookname'] as String,
       authorName: map['author_name'] as String,
       imagePath: map['image_path'] as String,
@@ -40,6 +43,7 @@ class Booksdata {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id, // Include id in the toMap method
       'bookname': bookname,
       'authorName': authorName,
       'imagePath': imagePath,

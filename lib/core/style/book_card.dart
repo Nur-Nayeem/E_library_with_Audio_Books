@@ -15,11 +15,11 @@ class Books extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     return Container(
       width: size.width * 0.28,
-      height: 80,// Adjusted width for three in a row (approx.)
+      height: 80, // Adjusted width for three in a row (approx.)
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
@@ -29,69 +29,71 @@ class Books extends StatelessWidget {
           ),
         ],
       ),
-    child: GestureDetector(
-    onTap: () {
-    Navigator.push(
-    context,
-    MaterialPageRoute(builder: (_) => BooksDetails(book: book)),
-    );
-    },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-              child: Image.network(
-                book['imagePath'],
-                fit: BoxFit.contain,
-                width: double.infinity,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => BooksDetails(book: book)),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(10),
+                ),
+                child: Image.network(
+                  book['imagePath'],
+                  fit: BoxFit.contain,
+                  width: double.infinity,
 
-                height: 50, // Adjusted image height
+                  height: 50, // Adjusted image height
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  book['bookname'],
-                  style: GoogleFonts.poppins(
-                    fontSize: 10, // Slightly larger but still small
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+            Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    book['bookname'],
+                    style: GoogleFonts.poppins(
+                      fontSize: 10, // Slightly larger but still small
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 1),
-                Text(
-                  book['authorName'],
-                  style: GoogleFonts.poppins(
-                    fontSize: 8,
-                    color: Colors.grey[600],
+                  const SizedBox(height: 1),
+                  Text(
+                    book['authorName'],
+                    style: GoogleFonts.poppins(
+                      fontSize: 8,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                RatingBarIndicator(
-                  rating: (book['rating'] as num?)?.toDouble() ?? 0.0,
-                  itemBuilder: (context, index) => const Icon(
-                    Icons.star,
-                    color: Colors.amber,
+                  const SizedBox(height: 2),
+                  RatingBarIndicator(
+                    rating: (book['rating'] as num?)?.toDouble() ?? 0.0,
+                    itemBuilder:
+                        (context, index) =>
+                            const Icon(Icons.star, color: Colors.amber),
+                    itemCount: 5,
+                    itemSize: 10.0,
+                    unratedColor: Colors.grey[300],
                   ),
-                  itemCount: 5,
-                  itemSize: 10.0,
-                  unratedColor: Colors.grey[300],
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ));
+    );
   }
 }

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Make sure this contains ExploreScreen
+import '../auth/screens/auth/auth_wrapper.dart';
+import '../auth/screens/auth/user_profile.dart';
+import 'category_books_screen.dart';
+import 'home_screen.dart';
+import 'my_library.dart'; // Make sure this contains ExploreScreen
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -11,11 +15,9 @@ class BottomNavBar extends StatefulWidget {
 class _BottomNavBarState extends State<BottomNavBar> {
   final List<Widget> appScreens = [
     const ExploreScreen(),
-    const AllBooks(),
-    const MyLibrary(),
-    const Center(
-      child: Text("Profile"),
-    ),
+    const CategoryBooksScreen(selectedCategory: 'All'),
+    const SavedBooksPage(),
+    const AuthGate(),
   ];
 
   int _selectedIndex = 0;
@@ -58,13 +60,4 @@ class MyLibrary extends StatelessWidget {
   }
 }
 
-class AllBooks extends StatelessWidget {
-  const AllBooks({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text("All Books"),
-    );
-  }
-}

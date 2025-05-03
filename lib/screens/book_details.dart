@@ -1,14 +1,84 @@
 import 'package:flutter/material.dart';
-import '../../../core/book-model/data.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'book_listen.dart';
-import 'book_read.dart'; // RatingBar dependency
+import 'book_read.dart';
 
-class BooksDetails extends StatelessWidget {
+class BooksDetails extends StatefulWidget {
   final Map<String, dynamic> book;
 
   const BooksDetails({super.key, required this.book});
+
+  @override
+  State<BooksDetails> createState() => _BooksDetailsState();
+}
+
+class _BooksDetailsState extends State<BooksDetails> {
+  bool _isBookmarked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfBookmarked();
+  }
+
+  Future<void> _checkIfBookmarked() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      try {
+        final response = await Supabase.instance.client
+            .from('user_saved_books')
+            .select()
+            .eq('user_id', user.id)
+            .eq('book_id', widget.book['id'])
+            .maybeSingle(); // Safe if 0 or 1 result
+
+        if (response != null) {
+          setState(() {
+            _isBookmarked = true;
+          });
+        }
+      } catch (e) {
+        print('Error checking bookmark: $e');
+      }
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      print(
+        'Attempting to toggle bookmark for user ID: ${user.id}, book ID: ${widget.book['id']}, isBookmarked: $_isBookmarked',
+      );
+      try {
+        if (_isBookmarked) {
+          final response = await Supabase.instance.client
+              .from('user_saved_books')
+              .delete()
+              .eq('user_id', user.id)
+              .eq('book_id', widget.book['id']);
+          print('Delete response: $response');
+        } else {
+          final response = await Supabase.instance.client
+              .from('user_saved_books')
+              .insert({
+            'user_id': user.id,
+            'book_id': widget.book['id'],
+          });
+          print('Insert response: $response');
+        }
+
+        setState(() {
+          _isBookmarked = !_isBookmarked;
+        });
+      } catch (e) {
+        print('Error toggling bookmark: $e');
+      }
+    } else {
+      print('User not logged in');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,11 +103,11 @@ class BooksDetails extends StatelessWidget {
                         ),
                         IconButton(
                           icon: Icon(
-                            book['pdfPath'] != null ? Icons.bookmark_add_outlined : Icons.favorite_border,
+                            _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
                             color: Colors.black,
                             size: 35,
                           ),
-                          onPressed: () {},
+                          onPressed: _toggleBookmark,
                         ),
                       ],
                     ),
@@ -70,7 +140,7 @@ class BooksDetails extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Image.network(
-                              book['imagePath'],
+                              widget.book['imagePath'],
                               fit: BoxFit.fill,
                             ),
                           ),
@@ -95,19 +165,19 @@ class BooksDetails extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    book['bookname'],
+                    widget.book['bookname'],
                     style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
                   ),
                   SizedBox(height: 8),
                   Text(
-                    "By ${book['authorName']}",
+                    "By ${widget.book['authorName']}",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       RatingBar.builder(
-                        initialRating: book['rating'],
+                        initialRating: widget.book['rating'],
                         minRating: 0,
                         direction: Axis.horizontal,
                         allowHalfRating: true,
@@ -119,7 +189,7 @@ class BooksDetails extends StatelessWidget {
                       ),
                       SizedBox(width: 10),
                       Text(
-                        book['rating'].toString(),
+                        widget.book['rating'].toString(),
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
                       ),
                     ],
@@ -138,7 +208,7 @@ class BooksDetails extends StatelessWidget {
                       child: Container(
                         padding: EdgeInsets.only(top: 10, left: 40, right: 20),
                         child: Text(
-                          book['description'] ?? "No description available.",
+                          widget.book['description'] ?? "No description available.",
                           style: TextStyle(fontSize: 20, letterSpacing: 1.5, height: 1.5),
                         ),
                       ),
@@ -170,7 +240,7 @@ class BooksDetails extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      if (book['pdfPath'] != null)
+                      if (widget.book['pdfPath'] != null)
                         Container(
                           width: 150,
                           height: 60,
@@ -182,7 +252,7 @@ class BooksDetails extends StatelessWidget {
                           child: TextButton(
                             onPressed: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: book)),
+                              MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: widget.book)),
                             ),
                             child: Text(
                               "READ",
@@ -190,9 +260,9 @@ class BooksDetails extends StatelessWidget {
                             ),
                           ),
                         ),
-                      if (book['audioPaths'] != null)
+                      if (widget.book['audioPaths'] != null)
                         SizedBox(width: 20),
-                      if (book['audioPaths'] != null)
+                      if (widget.book['audioPaths'] != null)
                         Container(
                           width: 150,
                           height: 60,
@@ -204,7 +274,7 @@ class BooksDetails extends StatelessWidget {
                           child: TextButton(
                             onPressed: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => BooksListen(book: book)),
+                              MaterialPageRoute(builder: (context) => BooksListen(book: widget.book)),
                             ),
                             child: Text(
                               "LISTEN",
