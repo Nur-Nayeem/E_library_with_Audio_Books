@@ -5,6 +5,8 @@ import 'package:audiobook_e_library/screens/book_listing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/book-model/data.dart';
+import '../auth/screens/auth/auth_wrapper.dart';
+import '../auth/screens/auth/fetch_profile.dart';
 import '../core/book_list/auto_swaip_books.dart';
 import '../core/book_list/trending_book_cards_widget.dart';
 import '../core/book_list/fetch_books.dart';
@@ -25,6 +27,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   late Future<List<Booksdata>> _allBooksFuture;
   List<Booksdata> _allBooks = [];
   List<Booksdata> _searchResults = [];
+  late Future<Map<String, String>> _profileDataFuture;
   final TextEditingController _searchController = TextEditingController();
   final List<String> _categories = [
     'Novel',
@@ -48,6 +51,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
       _allBooks = books;
       return books;
     });
+    _profileDataFuture = loadProfileData();
   }
 
   void _filterSearchResults(String query) {
@@ -95,16 +99,83 @@ class _ExploreScreenState extends State<ExploreScreen> {
             color: Colors.black87,
           ),
         ),
-        actions: const [
+
+        //profile image:
+        //profile image:
+      actions: [
+        Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundImage: NetworkImage(
-                "https://ybykazhulyxhahheqwdm.supabase.co/storage/v1/object/public/images/nayeem.jpg",
+            padding: const EdgeInsets.only(left: 16.0, right: 8.0),
+            child: FutureBuilder<Map<String, String>>(
+              future: _profileDataFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Text(
+                    "Hi, Loading...",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  );
+                } else if (snapshot.hasError) {
+                  return const Text(
+                    "Hi, Error",
+                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w500),
+                  );
+                } else if (snapshot.hasData && snapshot.data!.containsKey('name')) {
+                  return Text(
+                    "Hi, ${snapshot.data!['name']}",
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  );
+                } else {
+                  return const Text(
+                    "Hi, User",
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  );
+                }
+              },
+            ),
+          ),
+          GestureDetector( // Wrap the CircleAvatar with GestureDetector
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AuthGate()),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: FutureBuilder<Map<String, String>>(
+                future: _profileDataFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircleAvatar(
+                      backgroundColor: Colors.grey,
+                    );
+                  } else if (snapshot.hasError) {
+                    return const CircleAvatar(
+                      backgroundColor: Colors.redAccent,
+                      child: Icon(Icons.error_outline, color: Colors.white),
+                    );
+                  } else if (snapshot.hasData &&
+                      snapshot.data!.containsKey('image_url') &&
+                      snapshot.data!['image_url']!.isNotEmpty) {
+                    return CircleAvatar(
+                      backgroundImage:
+                      NetworkImage(snapshot.data!['image_url']!),
+                    );
+                  } else {
+                    return const CircleAvatar(
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.black87),
+                    );
+                  }
+                },
               ),
             ),
           ),
         ],
+      ),
+      ],
       ),
       body: ListView(
         children: [

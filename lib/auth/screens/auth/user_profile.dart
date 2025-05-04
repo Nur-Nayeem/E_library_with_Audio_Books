@@ -34,7 +34,7 @@ class _ImageUploadState extends State<UserProfile> {
         final String fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
         await supabase.storage.from("images").uploadBinary(fileName, fileBytes);
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
             "Successfully Uploaded Image",
             style: TextStyle(fontSize: 21, color: Colors.white),
@@ -42,7 +42,24 @@ class _ImageUploadState extends State<UserProfile> {
           backgroundColor: Colors.green,
         ));
 
-        await _fetchLatestImage();
+        // Get the public URL of the newly uploaded image
+        final imageUrl = supabase.storage.from("images").getPublicUrl(fileName);
+
+        // Update the user's profile with this new image URL
+        final userId = supabase.auth.currentUser?.id;
+        if (userId != null) {
+          await supabase
+              .from('profiles')
+              .update({'profile_url': imageUrl})
+              .eq('id', userId);
+
+          // Update the local state to reflect the new image URL immediately
+          if (mounted) {
+            setState(() {
+              this.imageUrl = imageUrl;
+            });
+          }
+        }
       }
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -58,7 +75,6 @@ class _ImageUploadState extends State<UserProfile> {
       }
     }
   }
-
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -153,6 +169,7 @@ class _ImageUploadState extends State<UserProfile> {
     try {
       final files = await supabase.storage.from("images").list();
       if (files.isNotEmpty) {
+        // Sort files by name (assuming names are timestamps) to get the latest
         files.sort((a, b) => b.name.compareTo(a.name));
         final latestFile = files.first;
         final url = supabase.storage.from("images").getPublicUrl(latestFile.name);
@@ -173,6 +190,7 @@ class _ImageUploadState extends State<UserProfile> {
     }
   }
 
+
   Future<void> _logout() async {
     await supabase.auth.signOut();
     if (mounted) {
@@ -190,7 +208,7 @@ class _ImageUploadState extends State<UserProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile Update"),
+        title: const Text("Profile"),
         centerTitle: true,
         actions: [
           IconButton(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../auth/screens/auth/auth_wrapper.dart';
+import '../core/supabase_config.dart';
 import 'book_listen.dart';
 import 'book_read.dart';
 
@@ -107,7 +109,22 @@ class _BooksDetailsState extends State<BooksDetails> {
                             color: Colors.black,
                             size: 35,
                           ),
-                          onPressed: _toggleBookmark,
+                          onPressed: () async {
+                            final user = supabase.auth.currentUser;
+                            if (user != null) {
+                              _toggleBookmark(); // Call the bookmark toggle function if authenticated
+                            } else {
+                              // Navigate to AuthGate if not authenticated
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AuthGate()),
+                              );
+                              // Optionally, show a message
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please sign in to bookmark books.')),
+                              );
+                            }
+                          },
                         ),
                       ],
                     ),
@@ -250,10 +267,25 @@ class _BooksDetailsState extends State<BooksDetails> {
                             color: Color(0xffc44536),
                           ),
                           child: TextButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: widget.book)),
-                            ),
+                            onPressed: () async {
+                              final user = supabase.auth.currentUser;
+                              if (user != null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: widget.book)),
+                                );
+                              } else {
+                                // Navigate to AuthGate if not authenticated
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const AuthGate()),
+                                );
+                                // Optionally, show a message to the user
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please sign in to read the book.')),
+                                );
+                              }
+                            },
                             child: Text(
                               "READ",
                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
@@ -272,10 +304,25 @@ class _BooksDetailsState extends State<BooksDetails> {
                             color: Color(0xffc44536),
                           ),
                           child: TextButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => BooksListen(book: widget.book)),
-                            ),
+                            onPressed: () async {
+                              final user = supabase.auth.currentUser;
+                              if (user != null) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => BooksListen(book: widget.book)),
+                                );
+                              } else {
+                                // Navigate to AuthGate if not authenticated
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const AuthGate()),
+                                );
+                                // Optionally, show a message to the user
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please sign in to listen to the book.')),
+                                );
+                              }
+                            },
                             child: Text(
                               "LISTEN",
                               style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
