@@ -33,6 +33,10 @@ migrate_working_dir/
 .pub/
 /build/
 
+
+#supabase config
+/lib/core/supabase_config.dart
+
 # Symbolication related
 app.*.symbols
 
