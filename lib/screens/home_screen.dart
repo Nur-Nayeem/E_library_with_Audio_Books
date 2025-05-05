@@ -4,13 +4,16 @@ import 'package:audiobook_e_library/screens/book_details.dart';
 import 'package:audiobook_e_library/screens/book_listing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/book-model/data.dart';
 import '../auth/screens/auth/auth_wrapper.dart';
 import '../auth/screens/auth/fetch_profile.dart';
+import '../auth/screens/auth/user_profile.dart';
 import '../core/book_list/auto_swaip_books.dart';
 import '../core/book_list/trending_book_cards_widget.dart';
 import '../core/book_list/fetch_books.dart';
 import '../core/style/app_double_text.dart';
+import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart';
 import 'category_books_screen.dart';
 
@@ -83,9 +86,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffeeedf2),
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.black87),
@@ -137,10 +140,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
           GestureDetector( // Wrap the CircleAvatar with GestureDetector
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AuthGate()),
-              );
+              final user = Supabase.instance.client.auth.currentUser;
+              if (user != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const UserProfile()),
+                );
+                }
+              else{
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AuthGate()),
+                );
+              }
+
             },
             child: Padding(
               padding: const EdgeInsets.only(right: 16.0),
@@ -164,9 +177,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       NetworkImage(snapshot.data!['image_url']!),
                     );
                   } else {
-                    return const CircleAvatar(
-                      backgroundColor: Colors.grey,
-                      child: Icon(Icons.person, color: Colors.black87),
+                    return CircleAvatar(
+                      backgroundColor: AppStyles.userBg,
+                      child: Icon(Icons.person, color: AppStyles.userIcon),
                     );
                   }
                 },
@@ -179,6 +192,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ),
       body: ListView(
         children: [
+
+
+
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -388,7 +404,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.grey.shade100.withOpacity(0.7), // Added opacity for transparency
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(

@@ -1,8 +1,12 @@
+import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:typed_data';
+import 'dart:ui'; // Import for ImageFilter
 
 import 'package:flutter/material.dart';
+
+import 'auth_wrapper.dart';
 
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
@@ -75,6 +79,7 @@ class _ImageUploadState extends State<UserProfile> {
       }
     }
   }
+
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
@@ -200,19 +205,29 @@ class _ImageUploadState extends State<UserProfile> {
           backgroundColor: Colors.green,
         ),
       );
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Navigate to the AuthGate and remove all previous routes from the stack
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const AuthGate()),
+            (Route<dynamic> route) => false,
+      );
+
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print(Navigator);
     return Scaffold(
+      backgroundColor: AppStyles.bgColor.withOpacity(0.8), // Make background slightly transparent
       appBar: AppBar(
-        title: const Text("Profile"),
+        backgroundColor: AppStyles.bgColor.withOpacity(0.8), // Make app bar slightly transparent
+        title: const Text("Profile", style: TextStyle(color: Colors.black87)),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.black87), // Color of back button
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.black87),
             tooltip: 'Logout',
             onPressed: _logout,
           ),
@@ -235,13 +250,13 @@ class _ImageUploadState extends State<UserProfile> {
                     height: 200,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey[200],
+                      color: Colors.grey[200]?.withOpacity(0.8), // Transparent container
                     ),
                     child: imageUrl == null
-                        ? const Icon(
+                        ? Icon(
                       Icons.person,
                       size: 100,
-                      color: Colors.grey,
+                      color: Colors.grey.withOpacity(0.8), // Transparent icon
                     )
                         : ClipOval(
                       child: Image.network(
@@ -257,6 +272,7 @@ class _ImageUploadState extends State<UserProfile> {
                                   ? loadingProgress.cumulativeBytesLoaded /
                                   loadingProgress.expectedTotalBytes!
                                   : null,
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.black54),
                             ),
                           );
                         },
@@ -278,7 +294,8 @@ class _ImageUploadState extends State<UserProfile> {
                     child: FloatingActionButton(
                       mini: true,
                       onPressed: _uploadImage,
-                      child: const Icon(Icons.edit),
+                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
+                      child: const Icon(Icons.edit, color: Colors.white),
                     ),
                   ),
                 ],
@@ -286,11 +303,15 @@ class _ImageUploadState extends State<UserProfile> {
               const SizedBox(height: 30),
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
+                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
+                  focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87)),
+                  prefixIcon: Icon(Icons.person, color: Colors.black54.withOpacity(0.8)),
+                  labelStyle: TextStyle(color: Colors.black54.withOpacity(0.8)),
                 ),
+                style: const TextStyle(color: Colors.black87),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your name';
@@ -305,6 +326,8 @@ class _ImageUploadState extends State<UserProfile> {
                   onPressed: _updateProfile,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 15),
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
+                    foregroundColor: Colors.white,
                   ),
                   child: const Text(
                     'Update Profile',

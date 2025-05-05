@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/book-model/data.dart';
+import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart';
 
 class BooksListScreen extends StatelessWidget {
@@ -14,7 +15,9 @@ class BooksListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
+        backgroundColor: AppStyles.bgColor,
         title: Text(
           category,
           style: GoogleFonts.poppins(
@@ -23,13 +26,13 @@ class BooksListScreen extends StatelessWidget {
             color: Colors.black87,
           ),
         ),
-        backgroundColor: Colors.white,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        // iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: GridView.builder(
+          padding: EdgeInsets.only(top: 8.0),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             childAspectRatio: 0.65,

@@ -17,15 +17,15 @@ class TrendingBookCards extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return SizedBox(
-      width: size.width * 0.28,
+      width: size.width * 0.33,
       height: 120,
       child: Container(
         margin: EdgeInsets.only(right: wholeScreen == true ? 0 : 16),
         child: Container(
           width: 100,
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.grey.shade100.withOpacity(0.7), // Added opacity here
+            borderRadius: BorderRadius.circular(5),
           ),
           child: GestureDetector(
             onTap: () {

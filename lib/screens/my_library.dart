@@ -1,3 +1,4 @@
+import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
 import '../core/style/new_card.dart';
 import '../core/supabase_config.dart';
@@ -66,8 +67,11 @@ class _SavedBooksPageState extends State<SavedBooksPage> {
 
   @override
   Widget build(BuildContext context) {
+    fetchSavedBooks();
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
+        backgroundColor: AppStyles.bgColor,
         title: Text(
           'My Saved Books',
           style: GoogleFonts.poppins(
@@ -76,7 +80,6 @@ class _SavedBooksPageState extends State<SavedBooksPage> {
             color: Colors.black87,
           ),
         ),
-        backgroundColor: Colors.white,
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),

@@ -1,4 +1,5 @@
 // main.dart
+import 'package:audiobook_e_library/auth/screens/auth/auth_wrapper.dart';
 import 'package:audiobook_e_library/screens/bottom_nav_bar.dart';
 import 'package:audiobook_e_library/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
     return MaterialApp(
       title: 'E Library With Audio Book',
       theme: ThemeData(
@@ -32,15 +34,18 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const BottomNavBar(),
       routes: {
-//const BottomNavBar(),
-        'login': (context) => const LoginScreen(),
-        'signup': (context) => const SignupScreen(),
-        'home': (context) => const ExploreScreen(),
-        //'profile': (context) => const ProfileUpdateScreen(), // Add the profile route
-        'user-profile': (context) => const UserProfile(), // Add the profile route
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        // '/explore': (context) => const ExploreScreen(),
+        '/home': (context) => const AuthGate(),
+        '/all-books' : (context) => const AllBooks(),
+        '/saved-books' : (context) => const SavedBooks(),
+        '/user-profile': (context) => const UserProfile(), // Add the profile route
       },
+      // home:  const AuthGate(),
+
+      home: user != null ? const AuthGate() : const ExploreScreen(),
 
     );
   }

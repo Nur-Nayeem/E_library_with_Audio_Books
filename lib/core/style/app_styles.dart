@@ -4,15 +4,14 @@ Color primary = const Color(0xFF687daf);
 
 class AppStyles {
   static Color primaryColor = primary;
-  static Color bgColor = const Color(0xFFeeedf2);
   static Color textColor = Color(0xFF3b3b3b);
-  static Color ticketBlue = const Color(0xFF526799);
-  static Color ticketOrange = const Color(0xFFF37867);
+  static Color bgColor = const Color(0xff43b8a1);
+  static Color userBg = const Color(0xFF5C9A9A);
+  static Color userIcon = const Color(0xFF1E5E71);
   static Color kakiColor = const Color(0xFFd2bdb6);
   static Color appTicketTabColor = const Color(0xFFF4F6FD);
   static Color planeColor = const Color(0xFFBFC2DF);
   static Color findTicketButtonColor = const Color(0xD91130CE);
-  static Color circleColor = const Color(0xFF189999);
 
   static TextStyle textStyle =
       TextStyle(fontSize: 16, color: textColor, fontWeight: FontWeight.w500);

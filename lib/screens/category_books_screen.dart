@@ -1,3 +1,4 @@
+import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -86,8 +87,9 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppStyles.bgColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppStyles.bgColor,
         elevation: 0,
         title: Text(
           _currentCategory,
@@ -96,12 +98,6 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
             fontWeight: FontWeight.w600,
             color: Colors.black87,
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () {
-            Navigator.pop(context);
-          },
         ),
       ),
       body: Column(
@@ -172,7 +168,7 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   Widget _buildSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Colors.grey.shade100.withOpacity(0.7),
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(

@@ -17,6 +17,7 @@ class BookGridCard extends StatelessWidget {
 
     return Card(
       elevation: 4,
+      color: Colors.white.withOpacity(0.7), // Added opacity here
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: GestureDetector(
         onTap: () {

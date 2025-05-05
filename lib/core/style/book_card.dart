@@ -18,7 +18,7 @@ class Books extends StatelessWidget {
       height: 80, // Adjusted width for three in a row (approx.)
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.7), // Added opacity here
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -83,7 +83,7 @@ class Books extends StatelessWidget {
                     rating: (book['rating'] as num?)?.toDouble() ?? 0.0,
                     itemBuilder:
                         (context, index) =>
-                            const Icon(Icons.star, color: Colors.amber),
+                    const Icon(Icons.star, color: Colors.amber),
                     itemCount: 5,
                     itemSize: 10.0,
                     unratedColor: Colors.grey[300],
