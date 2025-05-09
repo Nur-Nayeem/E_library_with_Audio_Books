@@ -1,3 +1,4 @@
+import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -107,7 +108,7 @@ class _BooksListenState extends State<BooksListen> {
   Widget build(BuildContext context) {
     final audioPaths = widget.book['audioPaths'] ?? [];
     return Scaffold(
-      backgroundColor: const Color(0xfff5f0e1), // Soft beige background
+      backgroundColor: AppStyles.planeColor, // Soft beige background
       appBar: AppBar(
         title: Text(widget.book['bookname'],
             style: const TextStyle(color: Color(0xff333333))), // Dark grey title

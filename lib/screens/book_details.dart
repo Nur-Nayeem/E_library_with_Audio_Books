@@ -1,3 +1,4 @@
+import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -34,7 +35,7 @@ class _BooksDetailsState extends State<BooksDetails> {
             .select()
             .eq('user_id', user.id)
             .eq('book_id', widget.book['id'])
-            .maybeSingle(); // Safe if 0 or 1 result
+            .maybeSingle();
 
         if (response != null) {
           setState(() {
@@ -50,27 +51,21 @@ class _BooksDetailsState extends State<BooksDetails> {
   Future<void> _toggleBookmark() async {
     final user = Supabase.instance.client.auth.currentUser;
     if (user != null) {
-      print(
-        'Attempting to toggle bookmark for user ID: ${user.id}, book ID: ${widget.book['id']}, isBookmarked: $_isBookmarked',
-      );
       try {
         if (_isBookmarked) {
-          final response = await Supabase.instance.client
+          await Supabase.instance.client
               .from('user_saved_books')
               .delete()
               .eq('user_id', user.id)
               .eq('book_id', widget.book['id']);
-          print('Delete response: $response');
         } else {
-          final response = await Supabase.instance.client
+          await Supabase.instance.client
               .from('user_saved_books')
               .insert({
             'user_id': user.id,
             'book_id': widget.book['id'],
           });
-          print('Insert response: $response');
         }
-
         setState(() {
           _isBookmarked = !_isBookmarked;
         });
@@ -78,264 +73,202 @@ class _BooksDetailsState extends State<BooksDetails> {
         print('Error toggling bookmark: $e');
       }
     } else {
-      print('User not logged in');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to bookmark books.')),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AuthGate()),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xfffff8ee),
-      body: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        child: Stack(
-          children: [
-            SafeArea(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.arrow_back, color: Colors.black, size: 35),
-                          onPressed: () => Navigator.of(context).pop(),
+      backgroundColor: AppStyles.planeColor,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 28),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                          color: Colors.black87,
+                          size: 28,
                         ),
-                        IconButton(
-                          icon: Icon(
-                            _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                            color: Colors.black,
-                            size: 35,
-                          ),
-                          onPressed: () async {
-                            final user = supabase.auth.currentUser;
-                            if (user != null) {
-                              _toggleBookmark(); // Call the bookmark toggle function if authenticated
-                            } else {
-                              // Navigate to AuthGate if not authenticated
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const AuthGate()),
-                              );
-                              // Optionally, show a message
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Please sign in to bookmark books.')),
-                              );
-                            }
-                          },
-                        ),
-                      ],
+                        onPressed: _toggleBookmark,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 15),
+                  height: MediaQuery.of(context).size.height * 0.25,
+                  width: MediaQuery.of(context).size.width * 0.35,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 12,
+                        offset: const Offset(4, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Image.network(
+                      widget.book['imagePath'],
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(child: Icon(Icons.image_not_supported_rounded, size: 40, color: Colors.grey));
+                      },
                     ),
                   ),
-                  Container(
-                    margin: EdgeInsets.only(bottom: 30),
-                    height: MediaQuery.of(context).size.height * 0.32,
-                    width: MediaQuery.of(context).size.width * 0.45,
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 25,
-                                offset: Offset(8, 8),
-                                spreadRadius: 3,
-                              ),
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 25,
-                                offset: Offset(-8, -8),
-                                spreadRadius: 3,
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
-                              widget.book['imagePath'],
-                              fit: BoxFit.fill,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          height: double.infinity,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.black.withOpacity(0.3),
-                                Colors.transparent,
-                                Colors.black.withOpacity(0.3),
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    widget.book['bookname'],
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    "By ${widget.book['authorName']}",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-                  ),
-                  Row(
+                ),
+                Text(
+                  widget.book['bookname'],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.black87),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "By ${widget.book['authorName']}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       RatingBar.builder(
-                        initialRating: widget.book['rating'],
+                        initialRating: widget.book['rating'] ?? 0.0,
                         minRating: 0,
                         direction: Axis.horizontal,
                         allowHalfRating: true,
                         itemCount: 5,
-                        itemSize: 25,
-                        itemPadding: EdgeInsets.symmetric(horizontal: 2.0),
-                        itemBuilder: (context, _) => Icon(Icons.star, color: Colors.amber),
+                        itemSize: 22,
+                        itemPadding: const EdgeInsets.symmetric(horizontal: 2.0),
+                        itemBuilder: (context, _) => const Icon(
+                          Icons.star_rounded,
+                          color: Colors.amber,
+                        ),
                         onRatingUpdate: (value) {},
+                        ignoreGestures: true,
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Text(
-                        widget.book['rating'].toString(),
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                        (widget.book['rating'] ?? 'N/A').toString(),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
                       ),
                     ],
                   ),
-                  Container(
-                    margin: EdgeInsets.all(24),
-                    height: 8,
-                    width: 100,
-                    decoration: BoxDecoration(
-                      color: Colors.teal,
-                      borderRadius: BorderRadius.circular(100),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                  child: Divider(color: Colors.grey, thickness: 1),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 10, left: 30, right: 30, bottom: 160), // Increased bottom padding
+                    child: Text(
+                      widget.book['description'] ?? "No description available.",
+                      style: const TextStyle(fontSize: 16, letterSpacing: 1.1, height: 1.5, color: Colors.black87),
                     ),
                   ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Container(
-                        padding: EdgeInsets.only(top: 10, left: 40, right: 20),
-                        child: Text(
-                          widget.book['description'] ?? "No description available.",
-                          style: TextStyle(fontSize: 20, letterSpacing: 1.5, height: 1.5),
-                        ),
-                      ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 40, // Increased the bottom value to shift buttons up
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (widget.book['pdfPath'] != null)
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final user = supabase.auth.currentUser;
+                      if (user != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: widget.book)),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please sign in to read the book.')),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AuthGate()),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.book_rounded, size: 24),
+                    label: const Text(
+                      "Read Now",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff6a5acd),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 4,
                     ),
                   ),
-                ],
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.15,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xfffff8ee).withOpacity(0.1),
-                      Colors.white.withOpacity(0.3),
-                      Color(0xfffff8ee).withOpacity(0.7),
-                      Color(0xfffff8ee).withOpacity(0.8),
-                      Color(0xfffff8ee),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                if (widget.book['audioPaths'] != null)
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final user = supabase.auth.currentUser;
+                      if (user != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => BooksListen(book: widget.book)),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please sign in to listen to the book.')),
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AuthGate()),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.headphones_rounded, size: 24),
+                    label: const Text(
+                      "Listen",
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xff008b8b),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      elevation: 4,
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (widget.book['pdfPath'] != null)
-                        Container(
-                          width: 150,
-                          height: 60,
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            color: Color(0xffc44536),
-                          ),
-                          child: TextButton(
-                            onPressed: () async {
-                              final user = supabase.auth.currentUser;
-                              if (user != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: widget.book)),
-                                );
-                              } else {
-                                // Navigate to AuthGate if not authenticated
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const AuthGate()),
-                                );
-                                // Optionally, show a message to the user
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please sign in to read the book.')),
-                                );
-                              }
-                            },
-                            child: Text(
-                              "READ",
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
-                            ),
-                          ),
-                        ),
-                      if (widget.book['audioPaths'] != null)
-                        SizedBox(width: 20),
-                      if (widget.book['audioPaths'] != null)
-                        Container(
-                          width: 150,
-                          height: 60,
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            color: Color(0xffc44536),
-                          ),
-                          child: TextButton(
-                            onPressed: () async {
-                              final user = supabase.auth.currentUser;
-                              if (user != null) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => BooksListen(book: widget.book)),
-                                );
-                              } else {
-                                // Navigate to AuthGate if not authenticated
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const AuthGate()),
-                                );
-                                // Optionally, show a message to the user
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Please sign in to listen to the book.')),
-                                );
-                              }
-                            },
-                            child: Text(
-                              "LISTEN",
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 28),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
