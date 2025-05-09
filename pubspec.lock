@@ -58,7 +58,7 @@ packages:
     source: hosted
     version: "2.12.0"
   audio_session:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: audio_session
       sha256: f100a780050adf5c552d8b59d7af32a60229fda79c623e64004caf9368ccc748
