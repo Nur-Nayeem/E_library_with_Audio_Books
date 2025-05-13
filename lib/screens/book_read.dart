@@ -5,19 +5,21 @@ import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
 import '../core/book-model/data.dart';
 
-class BooksReadHorizontal extends StatefulWidget {
+class BooksReadHorizontal extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
   // final Booksdata book;
   final Map<String, dynamic> book;
   const BooksReadHorizontal({super.key, required this.book});
 
   @override
-  State<BooksReadHorizontal> createState() => _BooksReadHorizontalState();
+  ConsumerState<BooksReadHorizontal> createState() => _BooksReadHorizontalState();
 }
 
-class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
+class _BooksReadHorizontalState extends ConsumerState<BooksReadHorizontal> {
   bool _isLoading = false;
   String? _pdfPath;
   final ValueNotifier<int> _currentPageNotifier = ValueNotifier<int>(0);
@@ -56,9 +58,11 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load PDF: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load PDF: $e')),
+        );
+      }
     }
   }
 
@@ -70,9 +74,17 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
+
+    _backgroundColor = isDarkMode ? Colors.grey[850]! : Colors.white;
+    _textColor = isDarkMode ? Colors.white : Colors.black;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.book['bookname']),
+        title: Text(widget.book['bookname'], style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),), // Apply theme
+        backgroundColor: isDarkMode ? Colors.grey[900] : Theme.of(context).appBarTheme.backgroundColor,
+        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black87),
       ),
       body: Stack(
         children: [
@@ -115,11 +127,15 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
                 .animate()
                 .fadeIn(duration: 300.ms)
                 .slideX(begin: 0.1, end: 0.0),
-          if (_isLoading) const Center(child: CircularProgressIndicator())
+          if (_isLoading) Center(child: CircularProgressIndicator(color: isDarkMode ? Colors.white : null,))
           else if (widget.book['pdfPath'] != null && (!_isPdfReady || _pdfPath == null))
             Center(
               child: ElevatedButton(
                 onPressed: _loadPdf,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isDarkMode ? Colors.grey[700] : null,
+                  foregroundColor: isDarkMode ? Colors.white : null,
+                ),
                 child: const Text('Load PDF'),
               ),
             )
@@ -150,7 +166,7 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
                     return Text(
                       'Page ${currentPage + 1}/${_totalPages ?? '?'}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600], // Apply theme
                       ),
                     );
                   },
@@ -164,6 +180,8 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
   }
 
   Widget _buildBottomBar() {
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     final totalPages = _totalPages ?? 0;
     final currentPage = _currentPageNotifier.value;
     final percentage = totalPages > 0
@@ -175,7 +193,7 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).appBarTheme.backgroundColor,
+        color: isDarkMode ? Colors.grey[800] : Theme.of(context).appBarTheme.backgroundColor, // Apply theme
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -190,7 +208,7 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
           LinearPercentIndicator(
             lineHeight: 8.0,
             percent: percent,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!, // Apply theme
             progressColor: Theme.of(context).primaryColor,
             padding: EdgeInsets.zero,
           ),
@@ -200,7 +218,7 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
             children: [
               Text(
                 '$percentage% completed',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
               ),
               if (_totalPages != null)
                 ValueListenableBuilder<int>(
@@ -208,7 +226,7 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
                   builder: (context, currentPage, child) {
                     return Text(
                       'Page ${currentPage + 1}/${_totalPages}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
                     );
                   },
                 ),
@@ -220,13 +238,13 @@ class _BooksReadHorizontalState extends State<BooksReadHorizontal> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.chevron_left),
+                  icon:  Icon(Icons.chevron_left, color: isDarkMode ? Colors.white : Colors.black87,), // Apply theme
                   onPressed: _currentPageNotifier.value > 0
                       ? () => _pdfViewController!.setPage(_currentPageNotifier.value - 1)
                       : null,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.chevron_right),
+                  icon:  Icon(Icons.chevron_right, color: isDarkMode ? Colors.white : Colors.black87,), // Apply theme
                   onPressed: _totalPages != null &&
                       _currentPageNotifier.value < _totalPages! - 1
                       ? () => _pdfViewController!.setPage(_currentPageNotifier.value + 1)

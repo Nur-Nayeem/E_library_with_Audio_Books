@@ -1,18 +1,19 @@
 import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
-import '../core/style/new_card.dart';
+import '../core/style/new_card.dart'; // Import the separate card widget
 import '../core/supabase_config.dart';
 import 'package:google_fonts/google_fonts.dart';
- // Import the separate card widget
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
-class SavedBooksPage extends StatefulWidget {
+class SavedBooksPage extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
   const SavedBooksPage({super.key});
 
   @override
-  State<SavedBooksPage> createState() => _SavedBooksPageState();
+  ConsumerState<SavedBooksPage> createState() => _SavedBooksPageState();
 }
 
-class _SavedBooksPageState extends State<SavedBooksPage> {
+class _SavedBooksPageState extends ConsumerState<SavedBooksPage> {
   List<Map<String, dynamic>> savedBooks = [];
   bool isLoading = true;
 
@@ -59,34 +60,38 @@ class _SavedBooksPageState extends State<SavedBooksPage> {
       setState(() {
         isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching saved books: ${e.toString()}')),
-      );
+      if(mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching saved books: ${e.toString()}')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     fetchSavedBooks();
     return Scaffold(
-      backgroundColor: AppStyles.bgColor,
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor, // Apply theme
       appBar: AppBar(
-        backgroundColor: AppStyles.bgColor,
+        backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor, // Apply theme
         title: Text(
           'My Saved Books',
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87, // Apply theme
           ),
         ),
         elevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
       ),
       body: isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ?  Center(child: CircularProgressIndicator(color: isDarkMode ? Colors.white : null,)) // Apply theme
           : savedBooks.isEmpty
-          ? const Center(child: Text('No saved books found'))
+          ?  Center(child: Text('No saved books found', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)) // Apply theme
           : Padding(
         padding: const EdgeInsets.all(16.0),
         child: GridView.builder(
@@ -106,3 +111,4 @@ class _SavedBooksPageState extends State<SavedBooksPage> {
     );
   }
 }
+

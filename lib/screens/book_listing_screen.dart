@@ -1,38 +1,41 @@
-// popular_books_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
 import '../../../core/book-model/data.dart';
 import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart';
 
-class BooksListScreen extends StatelessWidget {
+class BooksListScreen extends ConsumerWidget { // Change to ConsumerWidget
   final List<Booksdata> popularBooks;
   final String category;
 
   const BooksListScreen({super.key, required this.popularBooks, required this.category});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) { // Add WidgetRef
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: AppStyles.bgColor,
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor, // Apply theme
       appBar: AppBar(
-        backgroundColor: AppStyles.bgColor,
+        backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor, // Apply theme
         title: Text(
           category,
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87, // Apply theme
           ),
         ),
         elevation: 1,
-        // iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: GridView.builder(
-          padding: EdgeInsets.only(top: 8.0),
+          padding: const EdgeInsets.only(top: 8.0),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             childAspectRatio: 0.65,
@@ -48,3 +51,4 @@ class BooksListScreen extends StatelessWidget {
     );
   }
 }
+

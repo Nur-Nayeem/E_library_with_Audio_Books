@@ -1,17 +1,19 @@
 import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
-class BooksListen extends StatefulWidget {
+class BooksListen extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
   final Map<String, dynamic> book;
 
   const BooksListen({super.key, required this.book});
 
   @override
-  State<BooksListen> createState() => _BooksListenState();
+  ConsumerState<BooksListen> createState() => _BooksListenState();
 }
 
-class _BooksListenState extends State<BooksListen> {
+class _BooksListenState extends ConsumerState<BooksListen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   int currentIndex = 0;
   bool isPlaying = false;
@@ -53,9 +55,11 @@ class _BooksListenState extends State<BooksListen> {
       });
     } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load audio')),
-      );
+      if (mounted) { //check mounted
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to load audio')),
+        );
+      }
     }
   }
 
@@ -107,14 +111,16 @@ class _BooksListenState extends State<BooksListen> {
   @override
   Widget build(BuildContext context) {
     final audioPaths = widget.book['audioPaths'] ?? [];
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: AppStyles.planeColor, // Soft beige background
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.planeColor, // Apply theme
       appBar: AppBar(
         title: Text(widget.book['bookname'],
-            style: const TextStyle(color: Color(0xff333333))), // Dark grey title
+            style:  TextStyle(color: isDarkMode ? Colors.white : const Color(0xff333333))), // Apply theme
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xff333333)),
+        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : const Color(0xff333333)), // Apply theme
       ),
       body: Column(
         children: [
@@ -144,16 +150,16 @@ class _BooksListenState extends State<BooksListen> {
           Text(
             widget.book['bookname'],
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style:  TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
-              color: Color(0xff2e2e2e), // Darker grey for emphasis
+              color: isDarkMode ? Colors.white : const Color(0xff2e2e2e), // Apply theme
             ),
           ),
           const SizedBox(height: 8),
           Text(
             "By ${widget.book['authorName']}",
-            style: const TextStyle(fontSize: 18, color: Color(0xff555555)),
+            style:  TextStyle(fontSize: 18, color: isDarkMode ? Colors.grey[400] : const Color(0xff555555)), // Apply theme
           ),
           const SizedBox(height: 25),
 
@@ -163,7 +169,7 @@ class _BooksListenState extends State<BooksListen> {
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: const Color(0xffa83b2d), // Burnt orange
-                inactiveTrackColor: const Color(0xffdcd0c0), // Light beige
+                inactiveTrackColor: isDarkMode ? Colors.grey[700] : const Color(0xffdcd0c0), // Light beige
                 thumbColor: const Color(0xffa83b2d),
                 overlayColor: const Color(0xffa83b2d).withOpacity(0.3),
                 thumbShape:
@@ -187,9 +193,9 @@ class _BooksListenState extends State<BooksListen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(_formatTime(currentPosition),
-                    style: const TextStyle(color: Color(0xff666666))),
+                    style:  TextStyle(color: isDarkMode ? Colors.grey[300] : const Color(0xff666666))), // Apply theme
                 Text(_formatTime(totalDuration),
-                    style: const TextStyle(color: Color(0xff666666))),
+                    style:  TextStyle(color: isDarkMode ? Colors.grey[300] : const Color(0xff666666))), // Apply theme
               ],
             ),
           ),
@@ -197,8 +203,9 @@ class _BooksListenState extends State<BooksListen> {
 
           // Beautifully designed playback controls
           if (isLoading)
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xffa83b2d)),
+            CircularProgressIndicator(
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xffa83b2d)),
+              color: isDarkMode ? Colors.grey[700] : null,
             )
           else
             Row(
@@ -206,13 +213,13 @@ class _BooksListenState extends State<BooksListen> {
               children: [
                 IconButton(
                   onPressed: _playPrevious,
-                  icon: const Icon(Icons.skip_previous_rounded,
-                      size: 40, color: Color(0xff444444)),
+                  icon:  Icon(Icons.skip_previous_rounded,
+                      size: 40, color: isDarkMode ? Colors.white : const Color(0xff444444)), // Apply theme
                 ),
                 IconButton(
                   onPressed: _seekBackward10s,
-                  icon: const Icon(Icons.replay_10_rounded,
-                      size: 36, color: Color(0xff555555)),
+                  icon:  Icon(Icons.replay_10_rounded,
+                      size: 36, color: isDarkMode ? Colors.white : const Color(0xff555555)), // Apply theme
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -237,13 +244,13 @@ class _BooksListenState extends State<BooksListen> {
                 ),
                 IconButton(
                   onPressed: _seekForward10s,
-                  icon: const Icon(Icons.forward_10_rounded,
-                      size: 36, color: Color(0xff555555)),
+                  icon:  Icon(Icons.forward_10_rounded,
+                      size: 36, color: isDarkMode ? Colors.white : const Color(0xff555555)), // Apply theme
                 ),
                 IconButton(
                   onPressed: _playNext,
-                  icon: const Icon(Icons.skip_next_rounded,
-                      size: 40, color: Color(0xff444444)),
+                  icon:  Icon(Icons.skip_next_rounded,
+                      size: 40, color: isDarkMode ? Colors.white : const Color(0xff444444)), // Apply theme
                 ),
               ],
             ),
@@ -263,7 +270,7 @@ class _BooksListenState extends State<BooksListen> {
                     decoration: BoxDecoration(
                       color: currentIndex == index
                           ? const Color(0xffe0f2f7) // Light cyan when selected
-                          : Colors.white,
+                          : isDarkMode ? Colors.grey[800]! : Colors.white, // Apply theme
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
@@ -284,7 +291,7 @@ class _BooksListenState extends State<BooksListen> {
                               : Icons.headphones_rounded,
                           color: currentIndex == index
                               ? const Color(0xff26a69a)
-                              : Colors.grey.shade600,
+                              : isDarkMode ? Colors.white : Colors.grey.shade600, // Apply theme
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -295,7 +302,7 @@ class _BooksListenState extends State<BooksListen> {
                               fontWeight: currentIndex == index
                                   ? FontWeight.w600
                                   : FontWeight.normal,
-                              color: Color(0xff333333),
+                              color: isDarkMode ? Colors.white : const Color(0xff333333), // Apply theme
                             ),
                           ),
                         ),

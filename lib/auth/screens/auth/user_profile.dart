@@ -2,23 +2,23 @@ import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:typed_data';
-import 'dart:ui'; // Import for ImageFilter
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/theme_provider.dart';
 import 'auth_wrapper.dart';
 
-class UserProfile extends StatefulWidget {
+class UserProfile extends ConsumerStatefulWidget {
   const UserProfile({super.key});
 
   @override
-  State<UserProfile> createState() => _ImageUploadState();
+  ConsumerState<UserProfile> createState() => _UserProfileState();
 }
 
-class _ImageUploadState extends State<UserProfile> {
+class _UserProfileState extends ConsumerState<UserProfile> {
   final _formKey = GlobalKey<FormState>();
   final supabase = Supabase.instance.client;
-  String? imageUrl;
+  String? _imageUrl;
   final _nameController = TextEditingController();
   bool _isLoading = false;
 
@@ -28,51 +28,63 @@ class _ImageUploadState extends State<UserProfile> {
     _loadProfileData();
   }
 
-  Future<void> _uploadImage() async {
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleImageUpload() async {
     try {
-      final imagePicker = ImagePicker();
-      final pickedFile = await imagePicker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState(() => _isLoading = true);
-        final Uint8List fileBytes = await pickedFile.readAsBytes();
-        final String fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
-        await supabase.storage.from("images").uploadBinary(fileName, fileBytes);
+      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-            "Successfully Uploaded Image",
-            style: TextStyle(fontSize: 21, color: Colors.white),
-          ),
-          backgroundColor: Colors.green,
-        ));
+      setState(() => _isLoading = true);
+      final Uint8List fileBytes = await pickedFile.readAsBytes();
+      final String fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
 
-        // Get the public URL of the newly uploaded image
-        final imageUrl = supabase.storage.from("images").getPublicUrl(fileName);
+      await supabase.storage.from("images").uploadBinary(fileName, fileBytes);
 
-        // Update the user's profile with this new image URL
-        final userId = supabase.auth.currentUser?.id;
-        if (userId != null) {
-          await supabase
-              .from('profiles')
-              .update({'profile_url': imageUrl})
-              .eq('id', userId);
+      final newImageUrl = supabase.storage.from("images").getPublicUrl(fileName);
 
-          // Update the local state to reflect the new image URL immediately
-          if (mounted) {
-            setState(() {
-              this.imageUrl = imageUrl;
-            });
-          }
+      final userId = supabase.auth.currentUser?.id;
+      if (userId != null) {
+        await supabase
+            .from('profiles')
+            .update({'profile_url': newImageUrl})
+            .eq('id', userId);
+
+        if (mounted) {
+          setState(() {
+            _imageUrl = newImageUrl;
+          });
         }
       }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Image uploaded successfully!",
+              style: TextStyle(fontSize: 16),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          "Failed Uploading Image: $error",
-          style: const TextStyle(fontSize: 21, color: Colors.white),
-        ),
-        backgroundColor: Colors.red,
-      ));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Failed to upload image: $error",
+              style: const TextStyle(fontSize: 16),
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -86,33 +98,43 @@ class _ImageUploadState extends State<UserProfile> {
       try {
         final userId = supabase.auth.currentUser?.id;
         final newName = _nameController.text.trim();
-        final newProfileUrl = imageUrl;
+        final newProfileUrl = _imageUrl;
 
-        if (userId != null) {
-          final response = await supabase
-              .from('profiles')
-              .update({'name': newName, 'profile_url': newProfileUrl})
-              .eq('id', userId)
-              .select();
+        if (userId == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('User not authenticated.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
 
-          if (response != null && response.isNotEmpty) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Profile updated successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          } else {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Failed to update profile.'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
+        final response = await supabase
+            .from('profiles')
+            .update({'name': newName, 'profile_url': newProfileUrl})
+            .eq('id', userId)
+            .select();
+
+        if (response.isNotEmpty) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile updated successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to update profile.'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         }
       } catch (error) {
@@ -141,17 +163,11 @@ class _ImageUploadState extends State<UserProfile> {
             .from('profiles')
             .select('name, profile_url')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
         if (response != null) {
-          if (response['name'] != null) {
-            _nameController.text = response['name'] as String;
-          }
-          if (response['profile_url'] != null) {
-            setState(() {
-              imageUrl = response['profile_url'] as String;
-            });
-          }
+          _nameController.text = response['name'] ?? '';
+          _imageUrl = response['profile_url'];
         }
       }
     } catch (error) {
@@ -170,66 +186,37 @@ class _ImageUploadState extends State<UserProfile> {
     }
   }
 
-  Future<void> _fetchLatestImage() async {
-    try {
-      final files = await supabase.storage.from("images").list();
-      if (files.isNotEmpty) {
-        // Sort files by name (assuming names are timestamps) to get the latest
-        files.sort((a, b) => b.name.compareTo(a.name));
-        final latestFile = files.first;
-        final url = supabase.storage.from("images").getPublicUrl(latestFile.name);
-
-        if (mounted) {
-          setState(() {
-            imageUrl = url;
-          });
-        }
-      } else if (mounted) {
-        setState(() {
-          imageUrl = null;
-        });
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Can't fetch image: $error")));
-    }
-  }
-
-
-  Future<void> _logout() async {
-    await supabase.auth.signOut();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Logged out successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Navigate to the AuthGate and remove all previous routes from the stack
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const AuthGate()),
-            (Route<dynamic> route) => false,
-      );
-
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    print(Navigator);
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: AppStyles.bgColor.withOpacity(0.8), // Make background slightly transparent
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor.withOpacity(0.8),
       appBar: AppBar(
-        backgroundColor: AppStyles.bgColor.withOpacity(0.8), // Make app bar slightly transparent
+        backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8),
         title: const Text("Profile", style: TextStyle(color: Colors.black87)),
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.black87), // Color of back button
+        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black87),
+        leading: IconButton(  // Add the IconButton here
+          icon: Icon(isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined, color: isDarkMode ? Colors.white : Colors.black87),
+          onPressed: () {
+            ref.read(themeProvider.notifier).toggleTheme();
+          },
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black87),
+            icon: Icon(Icons.logout, color: isDarkMode ? Colors.white : Colors.black87),
             tooltip: 'Logout',
-            onPressed: _logout,
+            onPressed: () async {
+              await supabase.auth.signOut();
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthGate()),
+                      (route) => false,
+                );
+              }
+            },
           ),
         ],
       ),
@@ -242,103 +229,127 @@ class _ImageUploadState extends State<UserProfile> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey[200]?.withOpacity(0.8), // Transparent container
-                    ),
-                    child: imageUrl == null
-                        ? Icon(
-                      Icons.person,
-                      size: 100,
-                      color: Colors.grey.withOpacity(0.8), // Transparent icon
-                    )
-                        : ClipOval(
-                      child: Image.network(
-                        imageUrl!,
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                                  : null,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.black54),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Center(
-                            child: Icon(
-                              Icons.error,
-                              color: Colors.red,
-                              size: 50,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 10,
-                    right: 10,
-                    child: FloatingActionButton(
-                      mini: true,
-                      onPressed: _uploadImage,
-                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
-                      child: const Icon(Icons.edit, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
+              _buildProfileImage(),
               const SizedBox(height: 30),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
-                  enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
-                  focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87)),
-                  prefixIcon: Icon(Icons.person, color: Colors.black54.withOpacity(0.8)),
-                  labelStyle: TextStyle(color: Colors.black54.withOpacity(0.8)),
-                ),
-                style: const TextStyle(color: Colors.black87),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
+              _buildNameField(isDarkMode),
               const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _updateProfile,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text(
-                    'Update Profile',
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ),
+              _buildUpdateProfileButton(),
             ],
           ),
         ),
       ),
     );
   }
+
+  Widget _buildProfileImage() {
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.grey[200]?.withOpacity(0.8),
+          ),
+          child: _imageUrl == null
+              ? Icon(
+            Icons.person,
+            size: 50,
+            color: Colors.grey.withOpacity(0.8),
+          )
+              : ClipOval(
+            child: Image.network(
+              _imageUrl!,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                        : null,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.secondary),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(
+                    Icons.error,
+                    color: Colors.red,
+                    size: 50,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 10,
+          right: 10,
+          child: FloatingActionButton(
+            mini: true,
+            onPressed: _handleImageUpload,
+            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
+            child: const Icon(Icons.edit, color: Colors.white),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNameField(bool isDarkMode) {
+    return TextFormField(
+      controller: _nameController,
+      decoration: InputDecoration(
+        labelText: 'Name',
+        border: OutlineInputBorder(
+            borderSide:
+            BorderSide(color: Colors.black54.withOpacity(0.8))),
+        enabledBorder: OutlineInputBorder(
+            borderSide:
+            BorderSide(color: Colors.black54.withOpacity(0.8))),
+        focusedBorder:
+        const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87)),
+        prefixIcon: Icon(Icons.person,
+            color: Colors.black54.withOpacity(0.8)),
+        labelStyle: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black54.withOpacity(0.8)),
+      ),
+      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter your name';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildUpdateProfileButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _updateProfile,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          backgroundColor:
+          Theme.of(context).primaryColor.withOpacity(0.8),
+          foregroundColor: Colors.white,
+        ),
+        child: const Text(
+          'Update Profile',
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
 }
+

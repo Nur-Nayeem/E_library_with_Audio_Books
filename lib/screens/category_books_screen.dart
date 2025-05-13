@@ -1,21 +1,23 @@
-import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
 import '../../../core/book-model/data.dart';
 import '../core/book_list/fetch_books.dart';
+import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart'; // You might need other card widgets// Import your data fetching functions
 
-class CategoryBooksScreen extends StatefulWidget {
+class CategoryBooksScreen extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
   final String selectedCategory;
 
   const CategoryBooksScreen({super.key, required this.selectedCategory});
 
   @override
-  State<CategoryBooksScreen> createState() => _CategoryBooksScreenState();
+  ConsumerState<CategoryBooksScreen> createState() => _CategoryBooksScreenState();
 }
 
-class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
+class _CategoryBooksScreenState extends ConsumerState<CategoryBooksScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Booksdata> _categoryBooks = [];
   List<Booksdata> _searchResults = [];
@@ -29,7 +31,6 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
     'Thriller',
     'Romance',
     'Historical Fiction',
-
     // Add more categories as needed
   ];
   late String _currentCategory;
@@ -43,17 +44,16 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   }
 
   Future<List<Booksdata>> _fetchBooksByCategory(String category) async {
-    if(category != 'All') {
-      List<
-          Booksdata> allBooks = await fetchAllBooks(); // Ensure you have this function
+    if (category != 'All') {
+      List<Booksdata> allBooks =
+      await fetchAllBooks(); // Ensure you have this function
       return allBooks
           .where((book) =>
       (book.category?.toLowerCase() == category.toLowerCase()))
           .toList();
-    }
-    else{
-      List<
-          Booksdata> allBooks = await fetchAllBooks(); // Ensure you have this function
+    } else {
+      List<Booksdata> allBooks =
+      await fetchAllBooks(); // Ensure you have this function
       return allBooks.toList();
     }
   }
@@ -86,17 +86,19 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: AppStyles.bgColor,
+      backgroundColor: isDarkMode ? Colors.grey[900] :  AppStyles.bgColor, // Apply theme
       appBar: AppBar(
-        backgroundColor: AppStyles.bgColor,
+        backgroundColor: isDarkMode ? Colors.grey[800] :  AppStyles.bgColor, // Apply theme
         elevation: 0,
         title: Text(
           _currentCategory,
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87, // Apply theme
           ),
         ),
       ),
@@ -120,10 +122,10 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
                     style: ElevatedButton.styleFrom(
                       foregroundColor: _currentCategory == category
                           ? Colors.white
-                          : Colors.black87,
+                          : isDarkMode ? Colors.white : Colors.black87, // Apply theme
                       backgroundColor: _currentCategory == category
                           ? Theme.of(context).primaryColor // Customize active color
-                          : Colors.grey.shade200,
+                          : isDarkMode ? Colors.grey[700] : Colors.grey.shade200, // Apply theme
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -145,11 +147,11 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
                 future: _categoryBooksFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return  Center(child: CircularProgressIndicator(color: isDarkMode ? Colors.white : null,)); // Apply theme
                   } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)); // Apply theme
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No books found in this category.'));
+                    return  Center(child: Text('No books found in this category.', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)); // Apply theme
                   } else {
                     _categoryBooks = snapshot.data!;
                     return _searchController.text.isNotEmpty
@@ -166,18 +168,21 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
   }
 
   Widget _buildSearchBar() {
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100.withOpacity(0.7),
+        color: isDarkMode ? Colors.grey[800]! : Colors.grey.shade100.withOpacity(0.7), // Apply theme
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: _filterSearchResults,
+        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
         decoration: InputDecoration(
           hintText: "Search in ${_currentCategory}...",
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
+          hintStyle: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600), // Apply theme
+          prefixIcon: Icon(Icons.search, color: isDarkMode ? Colors.white : Colors.grey.shade600), // Apply theme
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(12),
         ),
@@ -215,3 +220,4 @@ class _CategoryBooksScreenState extends State<CategoryBooksScreen> {
     );
   }
 }
+

@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:audiobook_e_library/screens/book_details.dart';
 import 'package:audiobook_e_library/screens/book_listing_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,15 +15,17 @@ import '../core/style/app_double_text.dart';
 import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart';
 import 'category_books_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
+import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
-class ExploreScreen extends StatefulWidget {
+class ExploreScreen extends ConsumerStatefulWidget { // Use ConsumerStatefulWidget
   const ExploreScreen({super.key});
 
   @override
-  State<ExploreScreen> createState() => _ExploreScreenState();
+  ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends State<ExploreScreen> {
+class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   late Future<List<Booksdata>> _popularBooksFuture;
   late Future<List<Booksdata>> _trendingBooksFuture;
   late Future<List<Booksdata>> _allBooksFuture;
@@ -42,7 +43,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
     'Romance',
     'Historical Fiction',
     'All',
-    // Add more categories as needed
   ];
 
   @override
@@ -55,6 +55,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
       return books;
     });
     _profileDataFuture = loadProfileData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _filterSearchResults(String query) {
@@ -85,13 +91,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: AppStyles.bgColor,
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
       appBar: AppBar(
-        backgroundColor: AppStyles.bgColor,
+        backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black87),
+          icon:  Icon(Icons.menu, color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
           onPressed: () {},
         ),
         title: Text(
@@ -99,102 +107,95 @@ class _ExploreScreenState extends State<ExploreScreen> {
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87, // Apply theme
           ),
         ),
-
-        //profile image:
-        //profile image:
-      actions: [
-        Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 8.0),
-            child: FutureBuilder<Map<String, String>>(
-              future: _profileDataFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Text(
-                    "Hi, Loading...",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  );
-                } else if (snapshot.hasError) {
-                  return const Text(
-                    "Hi, Error",
-                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w500),
-                  );
-                } else if (snapshot.hasData && snapshot.data!.containsKey('name')) {
-                  return Text(
-                    "Hi, ${snapshot.data!['name']}",
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  );
-                } else {
-                  return const Text(
-                    "Hi, User",
-                    style: TextStyle(fontWeight: FontWeight.w500),
-                  );
-                }
-              },
-            ),
-          ),
-          GestureDetector( // Wrap the CircleAvatar with GestureDetector
-            onTap: () {
-              final user = Supabase.instance.client.auth.currentUser;
-              if (user != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const UserProfile()),
-                );
-                }
-              else{
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AuthGate()),
-                );
-              }
-
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: FutureBuilder<Map<String, String>>(
-                future: _profileDataFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircleAvatar(
-                      backgroundColor: Colors.grey,
+        actions: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0, right: 8.0),
+                child: FutureBuilder<Map<String, String>>(
+                  future: _profileDataFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return  Text(
+                        "Hi, Loading...",
+                        style: TextStyle(fontWeight: FontWeight.w500, color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
+                      );
+                    } else if (snapshot.hasError) {
+                      return  Text(
+                        "Hi, Error",
+                        style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w500),
+                      );
+                    } else if (snapshot.hasData && snapshot.data!.containsKey('name')) {
+                      return  Text(
+                        "Hi, ${snapshot.data!['name']}",
+                        style: TextStyle(fontWeight: FontWeight.w500, color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
+                      );
+                    } else {
+                      return  Text(
+                        "Hi, User",
+                        style: TextStyle(fontWeight: FontWeight.w500, color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
+                      );
+                    }
+                  },
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  final user = Supabase.instance.client.auth.currentUser;
+                  if (user != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UserProfile()),
                     );
-                  } else if (snapshot.hasError) {
-                    return const CircleAvatar(
-                      backgroundColor: Colors.redAccent,
-                      child: Icon(Icons.error_outline, color: Colors.white),
-                    );
-                  } else if (snapshot.hasData &&
-                      snapshot.data!.containsKey('image_url') &&
-                      snapshot.data!['image_url']!.isNotEmpty) {
-                    return CircleAvatar(
-                      backgroundImage:
-                      NetworkImage(snapshot.data!['image_url']!),
-                    );
-                  } else {
-                    return CircleAvatar(
-                      backgroundColor: AppStyles.userBg,
-                      child: Icon(Icons.person, color: AppStyles.userIcon),
+                  }
+                  else{
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AuthGate()),
                     );
                   }
                 },
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: FutureBuilder<Map<String, String>>(
+                    future: _profileDataFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return  CircleAvatar(
+                          backgroundColor: Colors.grey,
+                        );
+                      } else if (snapshot.hasError) {
+                        return const CircleAvatar(
+                          backgroundColor: Colors.redAccent,
+                          child: Icon(Icons.error_outline, color: Colors.white),
+                        );
+                      } else if (snapshot.hasData &&
+                          snapshot.data!.containsKey('image_url') &&
+                          snapshot.data!['image_url']!.isNotEmpty) {
+                        return CircleAvatar(
+                          backgroundImage:
+                          NetworkImage(snapshot.data!['image_url']!),
+                        );
+                      } else {
+                        return  CircleAvatar(
+                          backgroundColor: AppStyles.userBg,
+                          child:  Icon(Icons.person, color: isDarkMode ? Colors.white: AppStyles.userIcon), // Apply theme
+                        );
+                      }
+                    },
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
-      ],
-      ),
       body: ListView(
         children: [
-
-
-
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -205,7 +206,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 if (_searchController.text.isNotEmpty)
                   _searchResults.isNotEmpty
                       ? _buildSearchResultsList()
-                      : const Center(child: Text("কোন বই খোজে পাওয়া যায়নি"))
+                      :  Center(child: Text("কোন বই খোজে পাওয়া যায়নি", style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)) // Apply theme
                 else ...[
                   AppDoubleText(
                     bigText: "ফিচারড",
@@ -222,10 +223,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                         );
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('কোন ফিচারড বই খোজে পাওয়া যায়নি')),
-                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('কোন ফিচারড বই খোজে পাওয়া যায়নি')),
+                          );
+                        }
                       }
                     },
                   ),
@@ -235,12 +238,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
+                        return  Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red),));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text('কোন ফিচারড বই খোজে পাওয়া যায়নি'));
+                        return  Center(child: Text('কোন ফিচারড বই খোজে পাওয়া যায়নি', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)); // Apply theme
                       } else {
                         return AutoSwiper(
-                            book: snapshot.data!.take(3).toList());
+                          book: snapshot.data!.take(3).toList(),);
                       }
                     },
                   ),
@@ -260,10 +263,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                         );
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('কোন ট্রেন্ডিং বই খোজে পাওয়া যায়নি')),
-                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('কোন ট্রেন্ডিং বই খোজে পাওয়া যায়নি')),
+                          );
+                        }
                       }
                     },
                   ),
@@ -278,10 +283,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           return const Center(
                               child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
-                          return Center(child: Text('Error: ${snapshot.error}'));
+                          return  Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red),));
                         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(
-                              child: Text('কোন বই খোজে পাওয়া যায়নি'));
+                          return  Center(child: Text('কোন বই খোজে পাওয়া যায়নি', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)); // Apply theme
                         } else {
                           return ListView.builder(
                             scrollDirection: Axis.horizontal,
@@ -295,23 +299,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       },
                     ),
                   ),
-
                   const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.centerLeft,
                     child:  Text(
-
                       "কেটাগরি",
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: isDarkMode ? Colors.white : Colors.black87, // Apply theme
                       ),
                     ),),
                   const SizedBox(height: 10),
-                  // Category Buttons Section
                   SizedBox(
-                    height: 40, // Adjust height as needed
+                    height: 40,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: _categories.length,
@@ -322,8 +323,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           child: ElevatedButton(
                             onPressed: () => _navigateToCategoryBooks(category),
                             style: ElevatedButton.styleFrom(
-                              foregroundColor: Colors.black87,
-                              backgroundColor: Colors.grey.shade300,
+                              foregroundColor: isDarkMode ? Colors.white : Colors.black87, // Apply theme
+                              backgroundColor: isDarkMode? Colors.grey[700] : Colors.grey.shade300,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -338,9 +339,6 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       },
                     ),
                   ),
-
-
-
                   const SizedBox(height: 20),
                   AppDoubleText(
                     bigText: "পপুলার",
@@ -357,10 +355,12 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           ),
                         );
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('কোন পপুলার বই খোজে পাওয়া যায়নি')),
-                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('কোন পপুলার বই খোজে পাওয়া যায়নি')),
+                          );
+                        }
                       }
                     },
                   ),
@@ -375,10 +375,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           return const Center(
                               child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
-                          return Center(child: Text('Error: ${snapshot.error}'));
+                          return  Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red),));
                         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return const Center(
-                              child: Text('কোন পপুলার বই খোজে পাওয়া যায়নি'));
+                              child: Text('কোন পপুলার বই খোজে পাওয়া যায়নি'));
                         } else {
                           return ListView.builder(
                             scrollDirection: Axis.horizontal,
@@ -402,18 +402,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Widget _buildSearchBar() {
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100.withOpacity(0.7), // Added opacity for transparency
+        color: isDarkMode ? Colors.grey[800]!.withOpacity(0.7) : Colors.grey.shade100.withOpacity(0.7),
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: _filterSearchResults,
+        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: "পছন্দের বই খুজুন...",
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          prefixIcon: Icon(Icons.search, color: Colors.grey.shade600),
+          hintStyle: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600),
+          prefixIcon: Icon(Icons.search, color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(12),
         ),
@@ -422,6 +425,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
   }
 
   Widget _buildSearchResultsList() {
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -430,6 +435,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         final book = _searchResults[index].toMap();
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 8.0),
+          color: isDarkMode ? Colors.grey[800] : Colors.white,
           child: ListTile(
             leading: SizedBox(
               width: 50,
@@ -438,12 +444,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 book['imagePath'],
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.book, size: 40);
+                  return  Icon(Icons.book, size: 40, color: isDarkMode ? Colors.white : Colors.black87,);
                 },
               ),
             ),
-            title: Text(book['bookname']),
-            subtitle: Text(book['authorName'] ?? 'Unknown Author'),
+            title: Text(book['bookname'], style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),),
+            subtitle: Text(
+              book['authorName'] ?? 'Unknown Author',
+              style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600),
+            ),
             onTap: () {
               Navigator.push(
                 context,
@@ -459,3 +468,4 @@ class _ExploreScreenState extends State<ExploreScreen> {
     );
   }
 }
+
