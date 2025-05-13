@@ -8,29 +8,29 @@ import '../core/book_list/fetch_books.dart';
 import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart'; // You might need other card widgets// Import your data fetching functions
 
-class CategoryBooksScreen extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
+class AudioBooksListScreen extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
   final String selectedCategory;
 
-  const CategoryBooksScreen({super.key, required this.selectedCategory});
+  const AudioBooksListScreen({super.key, required this.selectedCategory});
 
   @override
-  ConsumerState<CategoryBooksScreen> createState() => _CategoryBooksScreenState();
+  ConsumerState<AudioBooksListScreen> createState() => _AudioBooksListScreenState();
 }
 
-class _CategoryBooksScreenState extends ConsumerState<CategoryBooksScreen> {
+class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<Booksdata> _categoryBooks = [];
   List<Booksdata> _searchResults = [];
   final List<String> _categories = [
-    'All',
-    'Novel',
-    'Poetry',
-    'Adventure',
-    'Fiction',
-    'Mystery',
-    'Thriller',
-    'Romance',
-    'Historical Fiction',
+    'Audio Books',
+    'Audio Novel',
+    'Audio Poetry',
+    'Audio Adventure',
+    'Audio Fiction',
+    'Audio Mystery',
+    'Audio Thriller',
+    'Audio Romance',
+    'Audio Historical',
     // Add more categories as needed
   ];
   late String _currentCategory;
@@ -44,17 +44,19 @@ class _CategoryBooksScreenState extends ConsumerState<CategoryBooksScreen> {
   }
 
   Future<List<Booksdata>> _fetchBooksByCategory(String category) async {
-    if (category != 'All') {
-      List<Booksdata> allBooks =
-      await fetchAllBooks(); // Ensure you have this function
-      return allBooks
+    List<String> cat = category.split(" ");
+    if (category != 'Audio Books') {
+      
+      List<Booksdata> allAudioBooks =
+      await fetchAudioBooks(); // Ensure you have this function
+      return allAudioBooks
           .where((book) =>
-      (book.category?.toLowerCase() == category.toLowerCase()))
+      (book.category?.toLowerCase() == cat.last.toLowerCase()))
           .toList();
     } else {
-      List<Booksdata> allBooks =
-      await fetchAllBooks(); // Ensure you have this function
-      return allBooks.toList();
+      List<Booksdata> allAudioBooks =
+      await fetchAudioBooks(); // Ensure you have this function
+      return allAudioBooks.toList();
     }
   }
 
@@ -200,7 +202,7 @@ class _CategoryBooksScreenState extends ConsumerState<CategoryBooksScreen> {
       ),
       itemCount: _categoryBooks.length,
       itemBuilder: (context, index) {
-        return Books(book: _categoryBooks[index].toMap(), typeed: ""); // Or your preferred book card
+        return Books(book: _categoryBooks[index].toMap(), typeed: "audio"); // Or your preferred book card
       },
     );
   }
@@ -215,7 +217,7 @@ class _CategoryBooksScreenState extends ConsumerState<CategoryBooksScreen> {
       ),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
-        return Books(book: _searchResults[index].toMap(), typeed: ""); // Or your preferred book card
+        return Books(book: _searchResults[index].toMap(), typeed: "audio",); // Or your preferred book card
       },
     );
   }

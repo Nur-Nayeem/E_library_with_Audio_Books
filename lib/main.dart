@@ -38,6 +38,7 @@ class MyApp extends ConsumerWidget {
         colorSchemeSeed: Colors.green,
         useMaterial3: true,
         brightness: Brightness.dark,
+
       ),
       themeMode: themeMode,
       debugShowCheckedModeBanner: false,

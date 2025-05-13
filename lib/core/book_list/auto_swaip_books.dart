@@ -1,6 +1,7 @@
 // AutoSwiper widget
 import 'dart:async';
 
+import 'package:audiobook_e_library/screens/book_details.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -56,42 +57,54 @@ class _AutoSwiperState extends State<AutoSwiper> {
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.book.length,
-            itemBuilder: (context, index) {
-              final book = widget.book[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        book.imagePath, // Make sure your Booksdata model includes this field
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
+              itemBuilder: (context, index) {
+                final book = widget.book[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BooksDetails(book: book.toMap()),
                       ),
-                      Container(
-                        color: Colors.black.withOpacity(0.4),
-                      ),
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Text(
-                            book.bookname,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Image.network(
+                            book.imagePath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(color: Colors.grey),
+                          ),
+                          Container(
+                            color: Colors.black.withOpacity(0.4),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                book.bookname,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              }
+
           ),
         ),
         const SizedBox(height: 10),

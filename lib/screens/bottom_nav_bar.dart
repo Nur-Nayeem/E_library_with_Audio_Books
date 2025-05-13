@@ -7,7 +7,7 @@ import '../auth/screens/auth/auth_wrapper.dart';
 import '../auth/screens/auth/user_profile.dart';
 import 'category_books_screen.dart';
 import 'home_screen.dart';
-import 'my_library.dart';
+import 'audio_book_listing_main.dart';
 
 
 class BottomNavBar extends ConsumerStatefulWidget {
@@ -22,7 +22,7 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
   final List<Widget> _widgetOptions = <Widget>[
     const ExploreScreen(),
     const CategoryBooksScreen(selectedCategory: 'All',),
-    const SavedBooksPage(),
+    const AudioBooksListScreen(selectedCategory: 'Audio Books',),
     const UserProfile(),
   ];
 
@@ -69,21 +69,6 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
 
     return Scaffold(
 
-      // appBar: AppBar(
-      //   title: Text(_appBarTitles[_selectedIndex]),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.person),
-      //       onPressed: () {
-      //         if (user == null) {
-      //           Navigator.pushNamed(context, '/login');
-      //         } else {
-      //           Navigator.pushNamed(context, '/user-profile');
-      //         }
-      //       },
-      //     ),
-      //   ],
-      // ),
       body: WillPopScope(
         onWillPop: () async {
           if (_selectedIndex != 0) {
@@ -107,8 +92,8 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
             label: 'All Books',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'Saved Books',
+            icon: Icon(Icons.headphones),
+            label: 'Audio Books',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

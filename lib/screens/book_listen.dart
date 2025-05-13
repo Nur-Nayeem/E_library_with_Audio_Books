@@ -114,7 +114,7 @@ class _BooksListenState extends ConsumerState<BooksListen> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.planeColor, // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor, // Apply theme
       appBar: AppBar(
         title: Text(widget.book['bookname'],
             style:  TextStyle(color: isDarkMode ? Colors.white : const Color(0xff333333))), // Apply theme

@@ -1,21 +1,24 @@
-// core/style/app_double_text.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/theme_provider.dart';
 
-class AppDoubleText extends StatelessWidget {
+class AppDoubleText extends ConsumerWidget {
   final String bigText;
   final String smallText;
-  final VoidCallback? func; // Make func nullable
+  final VoidCallback? func;
 
   const AppDoubleText({
     super.key,
     required this.bigText,
     required this.smallText,
-    this.func, // Initialize func in the constructor
+    this.func,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -24,15 +27,15 @@ class AppDoubleText extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 20,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
         GestureDetector(
-          onTap: func, // Call the provided function when tapped
+          onTap: func,
           child: Text(
             smallText,
             style: GoogleFonts.poppins(
-              color: Colors.grey,
+              color: isDarkMode ? Colors.grey[400] : Colors.black54,
             ),
           ),
         ),
@@ -40,3 +43,4 @@ class AppDoubleText extends StatelessWidget {
     );
   }
 }
+

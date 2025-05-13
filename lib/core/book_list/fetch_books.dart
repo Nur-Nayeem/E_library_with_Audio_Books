@@ -8,6 +8,8 @@ List<Map<String, dynamic>> globalTrendingBooks = [];
 
 List<Map<String, dynamic>> globalPopularBooks = [];
 
+List<Map<String, dynamic>> globalAudioBooks = [];
+
 List<Map<String, dynamic>> AllBooks = [];
 
 
@@ -42,6 +44,21 @@ globalPopularBooks = popularBooks.map((book) => book.toMap()).toList();
 print(globalPopularBooks);
 
 return popularBooks;
+}
+
+Future<List<Booksdata>> fetchAudioBooks() async {
+  final response = await Supabase.instance.client
+      .from('books_data')
+      .select()
+      .neq('audio_paths', []);
+
+final audioBooks =
+(response as List).map((e) => Booksdata.fromMap(e)).toList();
+
+globalAudioBooks = audioBooks.map((book) => book.toMap()).toList();
+print(globalAudioBooks);
+
+return audioBooks;
 }
 
 Future<List<Booksdata>> fetchTrendingBooks() async {

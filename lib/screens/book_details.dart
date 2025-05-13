@@ -178,7 +178,7 @@ class _BooksDetailsState extends ConsumerState<BooksDetails> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.planeColor, // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor, // Apply theme
       body: Stack(
         children: [
           SafeArea(

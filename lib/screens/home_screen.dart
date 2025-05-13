@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:audiobook_e_library/screens/book_details.dart';
-import 'package:audiobook_e_library/screens/book_listing_screen.dart';
+import 'package:audiobook_e_library/screens/book_listing_screen_see_more_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,6 +14,7 @@ import '../core/book_list/fetch_books.dart';
 import '../core/style/app_double_text.dart';
 import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart';
+import 'audiobook_listing_see_more_screen.dart';
 import 'category_books_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 import '../../../core/theme/theme_provider.dart'; // Import your theme provider
@@ -27,6 +28,7 @@ class ExploreScreen extends ConsumerStatefulWidget { // Use ConsumerStatefulWidg
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   late Future<List<Booksdata>> _popularBooksFuture;
+  late Future<List<Booksdata>> _audioBooksFuture;
   late Future<List<Booksdata>> _trendingBooksFuture;
   late Future<List<Booksdata>> _allBooksFuture;
   List<Booksdata> _allBooks = [];
@@ -49,6 +51,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   void initState() {
     super.initState();
     _popularBooksFuture = fetchPopularBooks();
+    _audioBooksFuture = fetchAudioBooks();
     _trendingBooksFuture = fetchTrendingBooks();
     _allBooksFuture = fetchAllBooks().then((books) {
       _allBooks = books;
@@ -94,13 +97,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
+        backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
         elevation: 0,
-        leading: IconButton(
-          icon:  Icon(Icons.menu, color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
-          onPressed: () {},
+        leading: Padding( // Consider adding padding for better visual appearance
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset(
+            'assets/logo/icon.png', // Make sure the path to your image is correct
+          ),
         ),
         title: Text(
           "এক্সপ্লোর",
@@ -340,6 +345,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
+
+                  //populer section
                   AppDoubleText(
                     bigText: "পপুলার",
                     smallText: "আরো দেখুন",
@@ -385,13 +392,77 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             itemCount: snapshot.data!.take(4).length,
                             itemBuilder: (context, index) {
                               return Books(
-                                  book: snapshot.data![index].toMap());
+                                  book: snapshot.data![index].toMap(), typeed: "");
                             },
                           );
                         }
                       },
                     ),
                   ),
+
+
+
+
+                  const SizedBox(height: 20),
+
+                  //populer section
+                  AppDoubleText(
+                    bigText: "অডিও বই",
+                    smallText: "আরো দেখুন",
+                    func: () async {
+                      List<Booksdata> popularBooks =
+                      await _audioBooksFuture;
+                      if (popularBooks.isNotEmpty) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AudioBooksListScreen(
+                                audioBooks: popularBooks, category: "অডিও বই"),
+                          ),
+                        );
+                      } else {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('কোন অডিও বই খোজে পাওয়া যায়নি')),
+                          );
+                        }
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    height: 180,
+                    child: FutureBuilder<List<Booksdata>>(
+                      future: _audioBooksFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        } else if (snapshot.hasError) {
+                          return  Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red),));
+                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(
+                              child: Text('কোন অডিও বই খোজে পাওয়া যায়নি'));
+                        } else {
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: snapshot.data!.take(4).length,
+                            itemBuilder: (context, index) {
+
+                              return Books(
+                                  book: snapshot.data![index].toMap(), typeed: "audio");
+                            },
+                          );
+                        }
+                      },
+                    ),
+                  ),
+
+
+
+
                 ],
               ],
             ),
@@ -406,7 +477,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final isDarkMode = themeMode == ThemeMode.dark;
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800]!.withOpacity(0.7) : Colors.grey.shade100.withOpacity(0.7),
+        color: isDarkMode ? Colors.grey[700]!.withOpacity(0.7) : Colors.grey.shade100.withOpacity(0.7),
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
 import '../../../core/theme/theme_provider.dart'; // Import your theme provider
 
 import '../core/book-model/data.dart';
+import '../core/style/app_styles.dart';
 
 class BooksReadHorizontal extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
   // final Booksdata book;
@@ -77,7 +78,7 @@ class _BooksReadHorizontalState extends ConsumerState<BooksReadHorizontal> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
 
-    _backgroundColor = isDarkMode ? Colors.grey[850]! : Colors.white;
+    _backgroundColor = isDarkMode ? Colors.grey[700]! : AppStyles.bgColor;
     _textColor = isDarkMode ? Colors.white : Colors.black;
 
     return Scaffold(

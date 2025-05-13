@@ -7,18 +7,24 @@ import '../../screens/book_details.dart';
 
 class Books extends StatelessWidget {
   final Map<String, dynamic> book;
+  final String typeed;
 
-  const Books({super.key, required this.book});
+  const Books({super.key, required this.book, required this.typeed});
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    print(book['audioPath']);
+
+    // final hasAudio = book['audioPath'] != null;
+    final hasAudio = typeed == "audio" ? true : false ;
+
     return Container(
       width: size.width * 0.28,
-      height: 80, // Adjusted width for three in a row (approx.)
+      height: 80,
       margin: const EdgeInsets.only(right: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7), // Added opacity here
+        color: Colors.white.withOpacity(0.7),
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -44,12 +50,25 @@ class Books extends StatelessWidget {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(10),
                 ),
-                child: Image.network(
-                  book['imagePath'],
-                  fit: BoxFit.contain,
-                  width: double.infinity,
-
-                  height: 50, // Adjusted image height
+                child: Stack(
+                  children: [
+                    Image.network(
+                      book['imagePath'],
+                      fit: BoxFit.contain,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                    if (hasAudio)
+                      const Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Icon(
+                          Icons.headphones,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -61,7 +80,7 @@ class Books extends StatelessWidget {
                   Text(
                     book['bookname'],
                     style: GoogleFonts.poppins(
-                      fontSize: 10, // Slightly larger but still small
+                      fontSize: 10,
                       fontWeight: FontWeight.w500,
                       color: Colors.black87,
                     ),
@@ -79,14 +98,21 @@ class Books extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
-                  RatingBarIndicator(
-                    rating: (book['rating'] as num?)?.toDouble() ?? 0.0,
-                    itemBuilder:
-                        (context, index) =>
-                    const Icon(Icons.star, color: Colors.amber),
-                    itemCount: 5,
-                    itemSize: 10.0,
-                    unratedColor: Colors.grey[300],
+                  Row(
+                    children: [
+                      RatingBarIndicator(
+                        rating: (book['rating'] as num?)?.toDouble() ?? 0.0,
+                        itemBuilder: (context, index) =>
+                        const Icon(Icons.star, color: Colors.amber),
+                        itemCount: 5,
+                        itemSize: 10.0,
+                        unratedColor: Colors.grey[300],
+                      ),
+                      if (typeed == "saved") ...[
+                        const Spacer(),
+                        const Icon(Icons.bookmark_added, size: 22),
+                      ],
+                    ],
                   ),
                 ],
               ),

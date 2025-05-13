@@ -1,3 +1,4 @@
+import 'package:audiobook_e_library/core/book-model/data.dart';
 import 'package:audiobook_e_library/core/style/app_styles.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -5,27 +6,34 @@ import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/style/book_card.dart';
 import '../../../core/theme/theme_provider.dart';
 import 'auth_wrapper.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class UserProfile extends ConsumerStatefulWidget {
-  const UserProfile({super.key});
+class UserProfile  extends ConsumerStatefulWidget {
+  const UserProfile ({super.key});
 
   @override
-  ConsumerState<UserProfile> createState() => _UserProfileState();
+  ConsumerState<UserProfile > createState() =>
+      _UserProfileState();
 }
 
-class _UserProfileState extends ConsumerState<UserProfile> {
+class _UserProfileState
+    extends ConsumerState<UserProfile> {
   final _formKey = GlobalKey<FormState>();
   final supabase = Supabase.instance.client;
   String? _imageUrl;
   final _nameController = TextEditingController();
-  bool _isLoading = false;
+  bool _isLoadingProfile = false;
+  List<Booksdata> savedBooks = [];
+  bool _isLoadingLibrary = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfileData();
+    _fetchSavedBooks();
   }
 
   @override
@@ -36,10 +44,11 @@ class _UserProfileState extends ConsumerState<UserProfile> {
 
   Future<void> _handleImageUpload() async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      final pickedFile =
+      await ImagePicker().pickImage(source: ImageSource.gallery);
       if (pickedFile == null) return;
 
-      setState(() => _isLoading = true);
+      setState(() => _isLoadingProfile = true);
       final Uint8List fileBytes = await pickedFile.readAsBytes();
       final String fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
 
@@ -87,14 +96,14 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => _isLoadingProfile = false);
       }
     }
   }
 
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+      setState(() => _isLoadingProfile = true);
       try {
         final userId = supabase.auth.currentUser?.id;
         final newName = _nameController.text.trim();
@@ -148,14 +157,14 @@ class _UserProfileState extends ConsumerState<UserProfile> {
         }
       } finally {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isLoadingProfile = false);
         }
       }
     }
   }
 
   Future<void> _loadProfileData() async {
-    setState(() => _isLoading = true);
+    setState(() => _isLoadingProfile = true);
     try {
       final userId = supabase.auth.currentUser?.id;
       if (userId != null) {
@@ -181,10 +190,50 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       }
     } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() => _isLoadingProfile = false);
       }
     }
   }
+  // It's generally better to use camelCase for variable names in Dart
+
+  // List<Booksdata> savebooks = [];
+
+  Future<void> _fetchSavedBooks() async {
+    setState(() => _isLoadingLibrary = true);
+    try {
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+      final response = await supabase
+          .from('user_saved_books')
+          .select('''
+          book_id,
+          books_data (*)
+        ''')
+          .eq('user_id', userId);
+
+      if (response.isNotEmpty) {
+        print("enter");
+        savedBooks = response
+            .map((item) => Booksdata.fromMap(item['books_data'] as Map<String, dynamic>))
+            .toList();
+      } else {
+        savedBooks = [];
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching saved books: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingLibrary = false);
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -192,21 +241,26 @@ class _UserProfileState extends ConsumerState<UserProfile> {
     final isDarkMode = themeMode == ThemeMode.dark;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor.withOpacity(0.8),
+      backgroundColor:
+      isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8),
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8),
+        backgroundColor:
+        isDarkMode ? Colors.grey[700] : AppStyles.bgColor.withOpacity(0.8),
         title: const Text("Profile", style: TextStyle(color: Colors.black87)),
         centerTitle: true,
-        iconTheme: IconThemeData(color: isDarkMode ? Colors.white : Colors.black87),
-        leading: IconButton(  // Add the IconButton here
-          icon: Icon(isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined, color: isDarkMode ? Colors.white : Colors.black87),
+        iconTheme:
+        IconThemeData(color: isDarkMode ? Colors.white : Colors.black87),
+        leading: IconButton(
+          icon: Icon(isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              color: isDarkMode ? Colors.white : Colors.black87),
           onPressed: () {
             ref.read(themeProvider.notifier).toggleTheme();
           },
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.logout, color: isDarkMode ? Colors.white : Colors.black87),
+            icon: Icon(Icons.logout,
+                color: isDarkMode ? Colors.white : Colors.black87),
             tooltip: 'Logout',
             onPressed: () async {
               await supabase.auth.signOut();
@@ -220,30 +274,39 @@ class _UserProfileState extends ConsumerState<UserProfile> {
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _buildProfileImage(),
-              const SizedBox(height: 30),
-              _buildNameField(isDarkMode),
-              const SizedBox(height: 30),
-              _buildUpdateProfileButton(),
-            ],
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    _buildProfileImage(isDarkMode),
+                    const SizedBox(height: 30),
+                    _buildNameField(isDarkMode),
+                    const SizedBox(height: 30),
+                    _buildUpdateProfileButton(),
+                    const SizedBox(height: 40),
+                    Divider(
+                      color: Colors.grey.withOpacity(0.3),
+                      thickness: 1,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildLibrarySection(isDarkMode),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileImage() {
-    final themeMode = ref.watch(themeProvider);
-    final isDarkMode = themeMode == ThemeMode.dark;
+  Widget _buildProfileImage(bool isDarkMode) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -297,7 +360,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
           child: FloatingActionButton(
             mini: true,
             onPressed: _handleImageUpload,
-            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
+            backgroundColor: Theme.of(context).primaryColor.withOpacity(0),
             child: const Icon(Icons.edit, color: Colors.white),
           ),
         ),
@@ -311,15 +374,12 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       decoration: InputDecoration(
         labelText: 'Name',
         border: OutlineInputBorder(
-            borderSide:
-            BorderSide(color: Colors.black54.withOpacity(0.8))),
+            borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
         enabledBorder: OutlineInputBorder(
-            borderSide:
-            BorderSide(color: Colors.black54.withOpacity(0.8))),
+            borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
         focusedBorder:
         const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87)),
-        prefixIcon: Icon(Icons.person,
-            color: Colors.black54.withOpacity(0.8)),
+        prefixIcon: Icon(Icons.person, color: Colors.black54.withOpacity(0.8)),
         labelStyle: TextStyle(
             color: isDarkMode ? Colors.white70 : Colors.black54.withOpacity(0.8)),
       ),
@@ -340,8 +400,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
         onPressed: _updateProfile,
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
-          backgroundColor:
-          Theme.of(context).primaryColor.withOpacity(0.8),
+          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
           foregroundColor: Colors.white,
         ),
         child: const Text(
@@ -351,5 +410,44 @@ class _UserProfileState extends ConsumerState<UserProfile> {
       ),
     );
   }
-}
 
+  Widget _buildLibrarySection(bool isDarkMode) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'My Saved Books',
+          style: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 10),
+        _isLoadingLibrary
+            ? Center(
+            child: CircularProgressIndicator(
+                color: isDarkMode ? Colors.white : null))
+            : savedBooks.isEmpty
+            ? Text('No saved books found',
+            style:
+            TextStyle(color: isDarkMode ? Colors.white : Colors.black87))
+            : GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 0.6,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: savedBooks.length,
+          itemBuilder: (context, index) {
+            return Books(book: savedBooks[index].toMap(), typeed: "saved");
+          },
+        ),
+      ],
+    );
+  }
+}
