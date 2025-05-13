@@ -19,11 +19,15 @@ class BooksDetails extends StatefulWidget {
 
 class _BooksDetailsState extends State<BooksDetails> {
   bool _isBookmarked = false;
+  double _userRating = 0;
+  bool _hasRated = false;
 
   @override
   void initState() {
     super.initState();
     _checkIfBookmarked();
+    _checkIfUserHasRated();
+    updateBookRatings();
   }
 
   Future<void> _checkIfBookmarked() async {
@@ -44,6 +48,29 @@ class _BooksDetailsState extends State<BooksDetails> {
         }
       } catch (e) {
         print('Error checking bookmark: $e');
+      }
+    }
+  }
+
+  Future<void> _checkIfUserHasRated() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      try {
+        final response = await Supabase.instance.client
+            .from('user_ratings')
+            .select()
+            .eq('user_id', user.id)
+            .eq('book_id', widget.book['id'])
+            .maybeSingle();
+
+        if (response != null) {
+          setState(() {
+            _userRating = (response['rating'] as num).toDouble();
+            _hasRated = true;
+          });
+        }
+      } catch (e) {
+        print('Error checking user rating: $e');
       }
     }
   }
@@ -83,6 +110,64 @@ class _BooksDetailsState extends State<BooksDetails> {
     }
   }
 
+  Future<void> _handleRating(double rating) async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
+      setState(() {
+        _userRating = rating;
+      });
+      try {
+        if (_hasRated) {
+          //update
+          await Supabase.instance.client.from('user_ratings').update({
+            'rating': rating,
+            'updated_at': DateTime.now().toIso8601String(),
+          }).eq('user_id', user.id).eq('book_id', widget.book['id']);
+        } else {
+          //insert
+          await Supabase.instance.client.from('user_ratings').insert({
+            'user_id': user.id,
+            'book_id': widget.book['id'],
+            'rating': rating,
+          });
+          setState(() {
+            _hasRated = true;
+          });
+        }
+
+        //update average book rating
+        await updateBookRatings();
+      } catch (e) {
+        print('Error submitting rating: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to submit rating.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please sign in to rate this book.')),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AuthGate()),
+      );
+    }
+  }
+
+  Future<void> updateBookRatings() async {
+    final supabase = Supabase.instance.client;
+
+    try {
+      await supabase.rpc('update_book_ratings');
+      print('Book ratings updated successfully');
+    } catch (e) {
+      print('Failed to update book ratings: $e');
+    }
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,12 +184,15 @@ class _BooksDetailsState extends State<BooksDetails> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 28),
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                            color: Colors.black87, size: 28),
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       IconButton(
                         icon: Icon(
-                          _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                          _isBookmarked
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
                           color: Colors.black87,
                           size: 28,
                         ),
@@ -134,7 +222,12 @@ class _BooksDetailsState extends State<BooksDetails> {
                       widget.book['imagePath'],
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const Center(child: Icon(Icons.image_not_supported_rounded, size: 40, color: Colors.grey));
+                        return const Center(
+                            child: Icon(
+                              Icons.image_not_supported_rounded,
+                              size: 40,
+                              color: Colors.grey,
+                            ));
                       },
                     ),
                   ),
@@ -142,13 +235,19 @@ class _BooksDetailsState extends State<BooksDetails> {
                 Text(
                   widget.book['bookname'],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: Colors.black87),
+                  style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   "By ${widget.book['authorName']}",
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700]),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
@@ -156,24 +255,63 @@ class _BooksDetailsState extends State<BooksDetails> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       RatingBar.builder(
-                        initialRating: widget.book['rating'] ?? 0.0,
+                        initialRating: widget.book['rating'] ??
+                            0.0, //use the book's average rating
                         minRating: 0,
                         direction: Axis.horizontal,
                         allowHalfRating: true,
                         itemCount: 5,
                         itemSize: 22,
-                        itemPadding: const EdgeInsets.symmetric(horizontal: 2.0),
+                        itemPadding:
+                        const EdgeInsets.symmetric(horizontal: 2.0),
                         itemBuilder: (context, _) => const Icon(
                           Icons.star_rounded,
                           color: Colors.amber,
                         ),
                         onRatingUpdate: (value) {},
-                        ignoreGestures: true,
+                        ignoreGestures:
+                        true, // Display only, user cannot change here
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        (widget.book['rating'] ?? 'N/A').toString(),
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87),
+                        (widget.book['rating'] ?? 'N/A')
+                            .toString(), //show the average rating
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                ),
+                // New Rating Bar for User Rating
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 20),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Your Rating:",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87),
+                      ),
+                      const SizedBox(height: 5),
+                      RatingBar.builder(
+                        initialRating: _userRating,
+                        minRating: 0,
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemSize: 30,
+                        itemPadding:
+                        const EdgeInsets.symmetric(horizontal: 8.0),
+                        itemBuilder: (context, _) => const Icon(
+                          Icons.star_rounded,
+                          color: Colors.amber,
+                        ),
+                        onRatingUpdate:
+                        _handleRating, //call the _handleRating function
                       ),
                     ],
                   ),
@@ -184,10 +322,17 @@ class _BooksDetailsState extends State<BooksDetails> {
                 ),
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 10, left: 30, right: 30, bottom: 160), // Increased bottom padding
+                    padding: const EdgeInsets.only(
+                        top: 10, left: 30, right: 30, bottom: 160),
+                    // Increased bottom padding
                     child: Text(
-                      widget.book['description'] ?? "No description available.",
-                      style: const TextStyle(fontSize: 16, letterSpacing: 1.1, height: 1.5, color: Colors.black87),
+                      widget.book['description'] ??
+                          "No description available.",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          letterSpacing: 1.1,
+                          height: 1.5,
+                          color: Colors.black87),
                     ),
                   ),
                 ),
@@ -208,28 +353,36 @@ class _BooksDetailsState extends State<BooksDetails> {
                       if (user != null) {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => BooksReadHorizontal(book: widget.book)),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  BooksReadHorizontal(book: widget.book)),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please sign in to read the book.')),
+                          const SnackBar(
+                              content: Text(
+                                  'Please sign in to read the book.')),
                         );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const AuthGate()),
+                          MaterialPageRoute(
+                              builder: (context) => const AuthGate()),
                         );
                       }
                     },
                     icon: const Icon(Icons.book_rounded, size: 24),
                     label: const Text(
                       "Read Now",
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                      style:
+                      TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff6a5acd),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                       elevation: 4,
                     ),
                   ),
@@ -240,28 +393,36 @@ class _BooksDetailsState extends State<BooksDetails> {
                       if (user != null) {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => BooksListen(book: widget.book)),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  BooksListen(book: widget.book)),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Please sign in to listen to the book.')),
+                          const SnackBar(
+                              content: Text(
+                                  'Please sign in to listen to the book.')),
                         );
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const AuthGate()),
+                          MaterialPageRoute(
+                              builder: (context) => const AuthGate()),
                         );
                       }
                     },
                     icon: const Icon(Icons.headphones_rounded, size: 24),
                     label: const Text(
                       "Listen",
-                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                      style:
+                      TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff008b8b),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15)),
                       elevation: 4,
                     ),
                   ),
@@ -273,3 +434,4 @@ class _BooksDetailsState extends State<BooksDetails> {
     );
   }
 }
+
