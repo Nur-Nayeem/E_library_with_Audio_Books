@@ -1,9 +1,6 @@
-// lib/onboarding/get_started_screen.dart
-import 'package:audiobook_e_library/auth/screens/auth/auth_wrapper.dart';
 import 'package:audiobook_e_library/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart'; // For opening URLs
 
 class GetStartedScreen extends StatefulWidget {
