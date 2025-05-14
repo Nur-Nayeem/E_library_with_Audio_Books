@@ -178,7 +178,7 @@ class _BooksDetailsState extends ConsumerState<BooksDetails> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor, // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[850] : AppStyles.bgColor, // Apply theme
       body: Stack(
         children: [
           SafeArea(
@@ -325,7 +325,7 @@ class _BooksDetailsState extends ConsumerState<BooksDetails> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-                  child: Divider(color: isDarkMode ? Colors.grey[700]! : Colors.grey, thickness: 1), // Apply theme
+                  child: Divider(color: isDarkMode ? Colors.grey[850]! : Colors.grey, thickness: 1), // Apply theme
                 ),
                 Expanded(
                   child: SingleChildScrollView(

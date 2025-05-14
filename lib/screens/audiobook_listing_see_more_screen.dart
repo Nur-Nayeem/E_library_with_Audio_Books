@@ -18,9 +18,9 @@ class AudioBooksListScreen extends ConsumerWidget { // Change to ConsumerWidget
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor, // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor, // Apply theme
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor, // Apply theme
+        backgroundColor: isDarkMode ? Colors.grey[850] : AppStyles.bgColor, // Apply theme
         title: Text(
           category,
           style: GoogleFonts.poppins(

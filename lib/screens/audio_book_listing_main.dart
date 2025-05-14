@@ -8,13 +8,14 @@ import '../core/book_list/fetch_books.dart';
 import '../core/style/app_styles.dart';
 import '../core/style/book_card.dart'; // You might need other card widgets// Import your data fetching functions
 
-class AudioBooksListScreen extends ConsumerStatefulWidget { // Change to ConsumerStatefulWidget
+class AudioBooksListScreen extends ConsumerStatefulWidget {
   final String selectedCategory;
 
   const AudioBooksListScreen({super.key, required this.selectedCategory});
 
   @override
-  ConsumerState<AudioBooksListScreen> createState() => _AudioBooksListScreenState();
+  ConsumerState<AudioBooksListScreen> createState() =>
+      _AudioBooksListScreenState();
 }
 
 class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
@@ -46,7 +47,6 @@ class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
   Future<List<Booksdata>> _fetchBooksByCategory(String category) async {
     List<String> cat = category.split(" ");
     if (category != 'Audio Books') {
-      
       List<Booksdata> allAudioBooks =
       await fetchAudioBooks(); // Ensure you have this function
       return allAudioBooks
@@ -91,20 +91,20 @@ class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[800] :  AppStyles.bgColor, // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor,
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[700] :  AppStyles.bgColor, // Apply theme
+        backgroundColor: isDarkMode ? Colors.grey[850] : AppStyles.bgColor,
         elevation: 0,
         title: Text(
           _currentCategory,
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: isDarkMode ? Colors.white : Colors.black87, // Apply theme
+            color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
       ),
-      body: Column(
+      body: ListView( // Use ListView as the outer widget
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -124,10 +124,10 @@ class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
                     style: ElevatedButton.styleFrom(
                       foregroundColor: _currentCategory == category
                           ? Colors.white
-                          : isDarkMode ? Colors.white : Colors.black87, // Apply theme
+                          : isDarkMode ? Colors.white : Colors.black87,
                       backgroundColor: _currentCategory == category
-                          ? Theme.of(context).primaryColor // Customize active color
-                          : isDarkMode ? Colors.grey[700] : Colors.grey.shade200, // Apply theme
+                          ? Theme.of(context).primaryColor
+                          : isDarkMode ? Colors.grey[850] : Colors.grey.shade200,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
@@ -142,26 +142,32 @@ class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
               },
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: FutureBuilder<List<Booksdata>>(
-                future: _categoryBooksFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return  Center(child: CircularProgressIndicator(color: isDarkMode ? Colors.white : null,)); // Apply theme
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)); // Apply theme
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return  Center(child: Text('No books found in this category.', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),)); // Apply theme
-                  } else {
-                    _categoryBooks = snapshot.data!;
-                    return _searchController.text.isNotEmpty
-                        ? _buildSearchResultsGrid()
-                        : _buildCategoryBooksGrid();
-                  }
-                },
-              ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: FutureBuilder<List<Booksdata>>(
+              future: _categoryBooksFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                      child: CircularProgressIndicator(
+                          color: isDarkMode ? Colors.white : null));
+                } else if (snapshot.hasError) {
+                  return Center(
+                      child: Text('Error: ${snapshot.error}',
+                          style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black87)));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(
+                      child: Text('No audiobooks found in this category.',
+                          style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black87)));
+                } else {
+                  _categoryBooks = snapshot.data!;
+                  return _searchController.text.isNotEmpty
+                      ? _buildSearchResultsGrid()
+                      : _buildCategoryBooksGrid();
+                }
+              },
             ),
           ),
         ],
@@ -174,17 +180,19 @@ class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
     final isDarkMode = themeMode == ThemeMode.dark;
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[700]! : Colors.grey.shade100.withOpacity(0.7), // Apply theme
+        color: isDarkMode ? Colors.grey[850]! : Colors.grey.shade100.withOpacity(0.7),
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(
         controller: _searchController,
         onChanged: _filterSearchResults,
-        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
+        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
         decoration: InputDecoration(
           hintText: "Search in ${_currentCategory}...",
-          hintStyle: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600), // Apply theme
-          prefixIcon: Icon(Icons.search, color: isDarkMode ? Colors.white : Colors.grey.shade600), // Apply theme
+          hintStyle:
+          TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600),
+          prefixIcon:
+          Icon(Icons.search, color: isDarkMode ? Colors.white : Colors.grey.shade600),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(12),
         ),
@@ -194,32 +202,35 @@ class _AudioBooksListScreenState extends ConsumerState<AudioBooksListScreen> {
 
   Widget _buildCategoryBooksGrid() {
     return GridView.builder(
+      shrinkWrap: true, // Important for embedding in ListView
+      physics: const NeverScrollableScrollPhysics(), // Disable scrolling of the GridView
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, // Adjust as needed
-        childAspectRatio: 0.65, // Adjust as needed
+        crossAxisCount: 3,
+        childAspectRatio: 0.65,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
       itemCount: _categoryBooks.length,
       itemBuilder: (context, index) {
-        return Books(book: _categoryBooks[index].toMap(), typeed: "audio"); // Or your preferred book card
+        return Books(book: _categoryBooks[index].toMap(), typeed: "audio");
       },
     );
   }
 
   Widget _buildSearchResultsGrid() {
     return GridView.builder(
+      shrinkWrap: true, // Important for embedding in ListView
+      physics: const NeverScrollableScrollPhysics(), // Disable scrolling of the GridView
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3, // Adjust as needed
-        childAspectRatio: 0.65, // Adjust as needed
+        crossAxisCount: 3,
+        childAspectRatio: 0.65,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
-        return Books(book: _searchResults[index].toMap(), typeed: "audio",); // Or your preferred book card
+        return Books(book: _searchResults[index].toMap(), typeed: "audio");
       },
     );
   }
 }
-

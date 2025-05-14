@@ -14,9 +14,7 @@ class Books extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    print(book['audioPath']);
 
-    // final hasAudio = book['audioPath'] != null;
     final hasAudio = typeed == "audio" ? true : false ;
 
     return Container(

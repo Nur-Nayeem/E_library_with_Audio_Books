@@ -11,19 +11,18 @@ import '../../../core/theme/theme_provider.dart';
 import 'auth_wrapper.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class UserProfile  extends ConsumerStatefulWidget {
-  const UserProfile ({super.key});
+class UserProfile extends ConsumerStatefulWidget {
+  const UserProfile({super.key});
 
   @override
-  ConsumerState<UserProfile > createState() =>
-      _UserProfileState();
+  ConsumerState<UserProfile> createState() => _UserProfileState();
 }
 
-class _UserProfileState
-    extends ConsumerState<UserProfile> {
+class _UserProfileState extends ConsumerState<UserProfile> {
   final _formKey = GlobalKey<FormState>();
   final supabase = Supabase.instance.client;
   String? _imageUrl;
+  String? _userName; // To store the loaded user name
   final _nameController = TextEditingController();
   bool _isLoadingProfile = false;
   List<Booksdata> savedBooks = [];
@@ -129,6 +128,9 @@ class _UserProfileState
 
         if (response.isNotEmpty) {
           if (mounted) {
+            setState(() {
+              _userName = newName; // Update the displayed name immediately
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Profile updated successfully!'),
@@ -176,6 +178,7 @@ class _UserProfileState
 
         if (response != null) {
           _nameController.text = response['name'] ?? '';
+          _userName = response['name']; // Initialize the displayed name
           _imageUrl = response['profile_url'];
         }
       }
@@ -194,9 +197,6 @@ class _UserProfileState
       }
     }
   }
-  // It's generally better to use camelCase for variable names in Dart
-
-  // List<Booksdata> savebooks = [];
 
   Future<void> _fetchSavedBooks() async {
     setState(() => _isLoadingLibrary = true);
@@ -214,9 +214,9 @@ class _UserProfileState
           .eq('user_id', userId);
 
       if (response.isNotEmpty) {
-        print("enter");
         savedBooks = response
-            .map((item) => Booksdata.fromMap(item['books_data'] as Map<String, dynamic>))
+            .map((item) =>
+            Booksdata.fromMap(item['books_data'] as Map<String, dynamic>))
             .toList();
       } else {
         savedBooks = [];
@@ -234,7 +234,6 @@ class _UserProfileState
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider);
@@ -242,11 +241,13 @@ class _UserProfileState
 
     return Scaffold(
       backgroundColor:
-      isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8),
+      isDarkMode ? Colors.grey[900] : AppStyles.bgColor.withOpacity(0.8),
       appBar: AppBar(
         backgroundColor:
-        isDarkMode ? Colors.grey[700] : AppStyles.bgColor.withOpacity(0.8),
-        title: const Text("Profile", style: TextStyle(color: Colors.black87)),
+        isDarkMode ? Colors.grey[850] : AppStyles.bgColor.withOpacity(0.8),
+        title: Text("Profile", style: TextStyle(
+            color: isDarkMode ?  Colors.white : Colors.black87
+        )),
         centerTitle: true,
         iconTheme:
         IconThemeData(color: isDarkMode ? Colors.white : Colors.black87),
@@ -284,9 +285,9 @@ class _UserProfileState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    _buildProfileImage(isDarkMode),
+                    _buildProfileHeader(isDarkMode), // Combined image and name
                     const SizedBox(height: 30),
-                    _buildNameField(isDarkMode),
+                    _buildNameField(),
                     const SizedBox(height: 30),
                     _buildUpdateProfileButton(),
                     const SizedBox(height: 40),
@@ -303,6 +304,24 @@ class _UserProfileState
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileHeader(bool isDarkMode) {
+    return Column(
+      children: [
+        _buildProfileImage(isDarkMode),
+        const SizedBox(height: 10),
+        Text(
+          _userName ?? 'Loading...',
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 
@@ -360,7 +379,7 @@ class _UserProfileState
           child: FloatingActionButton(
             mini: true,
             onPressed: _handleImageUpload,
-            backgroundColor: Theme.of(context).primaryColor.withOpacity(0),
+            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
             child: const Icon(Icons.edit, color: Colors.white),
           ),
         ),
@@ -368,30 +387,31 @@ class _UserProfileState
     );
   }
 
-  Widget _buildNameField(bool isDarkMode) {
-    return TextFormField(
-      controller: _nameController,
-      decoration: InputDecoration(
-        labelText: 'Name',
-        border: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
-        enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.black54.withOpacity(0.8))),
-        focusedBorder:
-        const OutlineInputBorder(borderSide: BorderSide(color: Colors.black87)),
-        prefixIcon: Icon(Icons.person, color: Colors.black54.withOpacity(0.8)),
-        labelStyle: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black54.withOpacity(0.8)),
+  Widget _buildNameField() { //_buildSearchBar
+    final themeMode = ref.watch(themeProvider); // Get the current theme
+    final isDarkMode = themeMode == ThemeMode.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.grey[850]! : Colors.grey.shade100.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(10),
       ),
-      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your name';
-        }
-        return null;
-      },
+      child: TextField(
+        controller: _nameController,
+        style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87),
+        decoration: InputDecoration(
+          hintText: "Enter your name",
+          hintStyle:
+          TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey.shade600),
+          prefixIcon:
+          Icon(Icons.person, color: isDarkMode ? Colors.white : Colors.grey.shade600),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(12),
+        ),
+
+      ),
     );
   }
+
 
   Widget _buildUpdateProfileButton() {
     return SizedBox(
@@ -430,13 +450,12 @@ class _UserProfileState
                 color: isDarkMode ? Colors.white : null))
             : savedBooks.isEmpty
             ? Text('No saved books found',
-            style:
-            TextStyle(color: isDarkMode ? Colors.white : Colors.black87))
+            style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black87))
             : GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             childAspectRatio: 0.6,
             crossAxisSpacing: 10,
@@ -444,7 +463,8 @@ class _UserProfileState
           ),
           itemCount: savedBooks.length,
           itemBuilder: (context, index) {
-            return Books(book: savedBooks[index].toMap(), typeed: "saved");
+            return Books(
+                book: savedBooks[index].toMap(), typeed: "saved");
           },
         ),
       ],

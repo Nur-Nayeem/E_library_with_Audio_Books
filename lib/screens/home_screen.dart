@@ -96,10 +96,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
+    final user = Supabase.instance.client.auth.currentUser;
+
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[800] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[900] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
       appBar: AppBar(
-        backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
+        backgroundColor: isDarkMode ? Colors.grey[850] : AppStyles.bgColor.withOpacity(0.8), // Apply theme
         elevation: 0,
         leading: Padding( // Consider adding padding for better visual appearance
           padding: const EdgeInsets.all(8.0),
@@ -136,7 +138,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                       );
                     } else if (snapshot.hasData && snapshot.data!.containsKey('name')) {
                       return  Text(
-                        "Hi, ${snapshot.data!['name']}",
+                        "Hi, ${user == null ? "Sign in here" :  snapshot.data!['name']}",
                         style: TextStyle(fontWeight: FontWeight.w500, color: isDarkMode ? Colors.white : Colors.black87), // Apply theme
                       );
                     } else {
@@ -329,7 +331,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                             onPressed: () => _navigateToCategoryBooks(category),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: isDarkMode ? Colors.white : Colors.black87, // Apply theme
-                              backgroundColor: isDarkMode? Colors.grey[700] : Colors.grey.shade300,
+                              backgroundColor: isDarkMode? Colors.grey[850] : Colors.grey.shade400,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -477,7 +479,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final isDarkMode = themeMode == ThemeMode.dark;
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[700]!.withOpacity(0.7) : Colors.grey.shade100.withOpacity(0.7),
+        color: isDarkMode ? Colors.grey[850]!.withOpacity(0.7) : Colors.grey.shade100.withOpacity(0.7),
         borderRadius: BorderRadius.circular(10),
       ),
       child: TextField(
@@ -506,7 +508,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         final book = _searchResults[index].toMap();
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 8.0),
-          color: isDarkMode ? Colors.grey[800] : Colors.white,
+          color: isDarkMode ? Colors.grey[900] : Colors.white,
           child: ListTile(
             leading: SizedBox(
               width: 50,

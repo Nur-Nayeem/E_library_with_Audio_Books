@@ -85,9 +85,10 @@ class _BooksListenState extends ConsumerState<BooksListen> {
   }
 
   String _formatTime(Duration d) {
+    final h = d.inHours.remainder(60).toString().padLeft(2, '0');
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return "$m:$s";
+    return h == null ? "$m:$s" : "$h:$m:$s";
   }
 
   void _playPrevious() {
@@ -114,7 +115,7 @@ class _BooksListenState extends ConsumerState<BooksListen> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[700] : AppStyles.bgColor, // Apply theme
+      backgroundColor: isDarkMode ? Colors.grey[850] : AppStyles.bgColor, // Apply theme
       appBar: AppBar(
         title: Text(widget.book['bookname'],
             style:  TextStyle(color: isDarkMode ? Colors.white : const Color(0xff333333))), // Apply theme
@@ -169,7 +170,7 @@ class _BooksListenState extends ConsumerState<BooksListen> {
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: const Color(0xffa83b2d), // Burnt orange
-                inactiveTrackColor: isDarkMode ? Colors.grey[700] : const Color(0xffdcd0c0), // Light beige
+                inactiveTrackColor: isDarkMode ? Colors.grey[850] : const Color(0xffdcd0c0), // Light beige
                 thumbColor: const Color(0xffa83b2d),
                 overlayColor: const Color(0xffa83b2d).withOpacity(0.3),
                 thumbShape:
@@ -205,7 +206,7 @@ class _BooksListenState extends ConsumerState<BooksListen> {
           if (isLoading)
             CircularProgressIndicator(
               valueColor: const AlwaysStoppedAnimation<Color>(Color(0xffa83b2d)),
-              color: isDarkMode ? Colors.grey[700] : null,
+              color: isDarkMode ? Colors.grey[850] : null,
             )
           else
             Row(
@@ -270,7 +271,7 @@ class _BooksListenState extends ConsumerState<BooksListen> {
                     decoration: BoxDecoration(
                       color: currentIndex == index
                           ? const Color(0xffe0f2f7) // Light cyan when selected
-                          : isDarkMode ? Colors.grey[800]! : Colors.white, // Apply theme
+                          : isDarkMode ? Colors.grey[900]! : Colors.white, // Apply theme
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(

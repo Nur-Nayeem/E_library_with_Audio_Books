@@ -78,7 +78,7 @@ class _BooksReadHorizontalState extends ConsumerState<BooksReadHorizontal> {
     final themeMode = ref.watch(themeProvider); // Get the current theme
     final isDarkMode = themeMode == ThemeMode.dark;
 
-    _backgroundColor = isDarkMode ? Colors.grey[700]! : AppStyles.bgColor;
+    _backgroundColor = isDarkMode ? Colors.grey[850]! : AppStyles.bgColor;
     _textColor = isDarkMode ? Colors.white : Colors.black;
 
     return Scaffold(
@@ -194,7 +194,7 @@ class _BooksReadHorizontalState extends ConsumerState<BooksReadHorizontal> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Theme.of(context).appBarTheme.backgroundColor, // Apply theme
+        color: isDarkMode ? Colors.grey[900] : Theme.of(context).appBarTheme.backgroundColor, // Apply theme
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -209,7 +209,7 @@ class _BooksReadHorizontalState extends ConsumerState<BooksReadHorizontal> {
           LinearPercentIndicator(
             lineHeight: 8.0,
             percent: percent,
-            backgroundColor: isDarkMode ? Colors.grey[700]! : Colors.grey[300]!, // Apply theme
+            backgroundColor: isDarkMode ? Colors.grey[850]! : Colors.grey[300]!, // Apply theme
             progressColor: Theme.of(context).primaryColor,
             padding: EdgeInsets.zero,
           ),
