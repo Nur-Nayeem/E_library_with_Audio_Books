@@ -379,7 +379,7 @@ class _UserProfileState extends ConsumerState<UserProfile> {
           child: FloatingActionButton(
             mini: true,
             onPressed: _handleImageUpload,
-            backgroundColor: Theme.of(context).primaryColor.withOpacity(0.8),
+            backgroundColor: Theme.of(context).primaryColor.withOpacity(0),
             child: const Icon(Icons.edit, color: Colors.white),
           ),
         ),
