@@ -31,6 +31,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   late Future<List<Booksdata>> _audioBooksFuture;
   late Future<List<Booksdata>> _trendingBooksFuture;
   late Future<List<Booksdata>> _allBooksFuture;
+  late Future<List<Booksdata>> _featureBooksFuture;
   List<Booksdata> _allBooks = [];
   List<Booksdata> _searchResults = [];
   late Future<Map<String, String>> _profileDataFuture;
@@ -57,6 +58,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       _allBooks = books;
       return books;
     });
+    _featureBooksFuture = fetchFeaturesBook();
     _profileDataFuture = loadProfileData();
   }
 
@@ -219,7 +221,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     bigText: "ফিচারড",
                     smallText: "আরো দেখুন",
                     func: () async {
-                      List<Booksdata> trendingBooks = await _allBooksFuture;
+                      List<Booksdata> trendingBooks = await _featureBooksFuture;
                       if (trendingBooks.isNotEmpty) {
                         Navigator.push(
                           context,
@@ -240,7 +242,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                     },
                   ),
                   FutureBuilder<List<Booksdata>>(
-                    future: _popularBooksFuture,
+                    future: _featureBooksFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());

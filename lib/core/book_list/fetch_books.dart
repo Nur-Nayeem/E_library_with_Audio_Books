@@ -12,6 +12,8 @@ List<Map<String, dynamic>> globalAudioBooks = [];
 
 List<Map<String, dynamic>> AllBooks = [];
 
+List<Map<String, dynamic>> AllFeatureBooks = [];
+
 
 
 
@@ -29,6 +31,24 @@ print(allTheBooks);
 AllBooks = allTheBooks.map((book) => book.toMap()).toList();
 
 return allTheBooks;
+}
+
+Future<List<Booksdata>> fetchFeaturesBook() async {
+  final oneMonthAgo = DateTime.now().toUtc().subtract(const Duration(days: 30));
+  final oneMonthAgoString = oneMonthAgo.toIso8601String();
+
+  final response = await Supabase.instance.client
+      .from('books_data')
+      .select()
+      .gte('uploaded_at', oneMonthAgoString); // Assuming you have a 'created_at' column
+
+  final featureBooks =
+  (response as List).map((e) => Booksdata.fromMap(e)).toList();
+  print(featureBooks);
+
+  AllFeatureBooks = featureBooks.map((book) => book.toMap()).toList();
+
+  return featureBooks;
 }
 
 Future<List<Booksdata>> fetchPopularBooks() async {

@@ -26,6 +26,11 @@ class _AutoSwiperState extends State<AutoSwiper> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
+    _pageController.addListener(() {
+      setState(() {
+        _currentPage = _pageController.page?.round() ?? 0;
+      });
+    });
     _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (_currentPage < widget.book.length - 1) {
         _currentPage++;
@@ -57,54 +62,58 @@ class _AutoSwiperState extends State<AutoSwiper> {
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.book.length,
-              itemBuilder: (context, index) {
-                final book = widget.book[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BooksDetails(book: book.toMap()),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.network(
-                            book.imagePath,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(color: Colors.grey),
-                          ),
-                          Container(
-                            color: Colors.black.withOpacity(0.4),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Text(
-                                book.bookname,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final book = widget.book[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BooksDetails(book: book.toMap()),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.network(
+                          book.imagePath,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(color: Colors.grey),
+                        ),
+                        Container(
+                          color: Colors.black.withOpacity(0.4),
+                        ),
+                        Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              book.bookname,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }
-
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: 10),
@@ -117,7 +126,7 @@ class _AutoSwiperState extends State<AutoSwiper> {
               width: _currentPage == index ? 20 : 6,
               height: 6,
               decoration: BoxDecoration(
-                color: _currentPage == index ? Colors.red : Colors.grey,
+                color: _currentPage == index ? Colors.green : Colors.grey,
                 borderRadius: BorderRadius.circular(3),
               ),
             );

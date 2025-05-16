@@ -1,5 +1,5 @@
 class Booksdata {
-  final int id; // Added id field
+  final int id;
   String bookname;
   String authorName;
   String imagePath;
@@ -8,11 +8,17 @@ class Booksdata {
   String? description;
   String? category;
   int percentageCompleted;
-  double rating;
+  // Use a private variable and getter/setter for rating
+  double _rating;
+  double get rating => _rating;
+  set rating(double newRating) {
+    _rating = double.parse(newRating.toStringAsFixed(1));
+  }
+
   late final int? totalPages;
 
   Booksdata({
-    required this.id, // Make sure to require the id
+    required this.id,
     required this.authorName,
     required this.bookname,
     required this.pdfPath,
@@ -21,13 +27,13 @@ class Booksdata {
     this.category,
     required this.percentageCompleted,
     required this.imagePath,
-    required this.rating,
+    required double rating, // Take rating as a double
     this.totalPages,
-  });
+  }) : _rating = double.parse(rating.toStringAsFixed(1));  // Ensure 1 decimal place here
 
   factory Booksdata.fromMap(Map<String, dynamic> map) {
     return Booksdata(
-      id: map['id'] as int, // Assuming your Supabase table has an 'id' field of type uuid/String
+      id: map['id'] as int,
       bookname: map['bookname'] as String,
       authorName: map['author_name'] as String,
       imagePath: map['image_path'] as String,
@@ -36,14 +42,15 @@ class Booksdata {
       description: map['description'] as String?,
       category: map['cetegory'] as String?,
       percentageCompleted: map['percentage_completed'] as int? ?? 0,
-      rating: (map['rating'] as num).toDouble(),
+      // Format rating here as well to handle data from storage
+      rating: double.parse((map['rating'] as num).toDouble().toStringAsFixed(1)),
       totalPages: map['total_pages'] as int?,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id, // Include id in the toMap method
+      'id': id,
       'bookname': bookname,
       'authorName': authorName,
       'imagePath': imagePath,
@@ -52,7 +59,7 @@ class Booksdata {
       'description': description,
       'cetegory': category,
       'percentageCompleted': percentageCompleted,
-      'rating': rating,
+      'rating': rating, // Use the getter
       'totalPages': totalPages,
     };
   }

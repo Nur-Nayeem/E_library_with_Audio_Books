@@ -8,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/supabase_config.dart';
 import 'login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 // Signup screen
 class SignupScreen extends StatefulWidget {
@@ -47,12 +49,15 @@ class _SignupScreenState extends State<SignupScreen> {
           final userId = response.user!.id;
           final name = _nameController.text.trim();
 
+
           // Insert the user's name into the 'profiles' table
           await supabase.from('profiles').insert([
             {'id': userId, 'name': name},
           ]);
 
           if (mounted) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('showGetStarted', false);
             Navigator.pushReplacementNamed(context, '/home');
           }
         }

@@ -163,6 +163,8 @@ class _BooksDetailsState extends ConsumerState<BooksDetails> {
   }
 
   Future<void> updateBookRatings() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user != null) {
     final supabase = Supabase.instance.client;
 
     try {
@@ -171,6 +173,7 @@ class _BooksDetailsState extends ConsumerState<BooksDetails> {
     } catch (e) {
       print('Failed to update book ratings: $e');
     }
+  }
   }
 
   @override

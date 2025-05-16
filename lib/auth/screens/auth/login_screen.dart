@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../screens/bottom_nav_bar.dart';
 import '../../providers/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 // Login screen
 class LoginScreen extends ConsumerStatefulWidget {
@@ -41,6 +43,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       final state = ref.read(authProvider);
       if (state is AuthStateAuthenticated) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('showGetStarted', false);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );
