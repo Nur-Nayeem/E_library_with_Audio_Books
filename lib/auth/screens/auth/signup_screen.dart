@@ -288,7 +288,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                       ),
                                     )
                                     : const Text(
-                                      'Sign Un',
+                                      'Sign Up',
                                       style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),
