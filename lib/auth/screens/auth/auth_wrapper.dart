@@ -28,15 +28,10 @@ class AuthGate extends ConsumerWidget {
 
     if (authState is AuthStateAuthenticated) {
       return const BottomNavBar(); // The main screen after login
-    } else if (authState is AuthStateUnauthenticated) {
+    } else if (authState is AuthStateUnauthenticated || authState is AuthStateError) {
       return buildAuthScaffold(
         title: 'Sign In / Sign Up',
         child: const LoginScreen(), // Display the LoginScreen directly
-      );
-    } else if (authState is AuthStateError) {
-      return buildAuthScaffold(
-        title: 'Authentication Error',
-        child: Center(child: Text('Auth Error: ${authState.message}')),
       );
     } else {
       return buildAuthScaffold(

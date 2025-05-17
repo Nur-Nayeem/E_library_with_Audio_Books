@@ -7,7 +7,6 @@ import '../../../screens/bottom_nav_bar.dart';
 import '../../providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 // Login screen
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +21,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+  String? _errorMessage; // To hold the error message
 
   @override
   void dispose() {
@@ -32,13 +32,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null; // Clear any previous error message
+      });
       await ref
           .read(authProvider.notifier)
           .signIn(
-            _emailController.text.trim(),
-            _passwordController.text.trim(),
-          );
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
       setState(() => _isLoading = false);
 
       final state = ref.read(authProvider);
@@ -49,9 +52,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );
       } else if (state is AuthStateError) {
+        setState(() {
+          _errorMessage = state.message;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(_errorMessage!),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
         );
+
       }
     }
   }
@@ -92,8 +102,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     // const SizedBox(height: 20),
                     Text(
                       'Welcome Back',
-                      style: Theme.of(context).textTheme.displayMedium
-                          ?.copyWith(color: Colors.white.withOpacity(0.8)),
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        color: Colors.white.withOpacity(0.8),
+                      ),
                     ),
                     const SizedBox(height: 48),
                     Form(
@@ -124,13 +135,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             style: const TextStyle(color: Colors.white),
-                            validator:
-                                (value) =>
-                                    value != null && value.contains('@')
-                                        ? null
-                                        : 'Enter a valid email',
+                            validator: (value) =>
+                            value != null && value.contains('@')
+                                ? null
+                                : 'Enter a valid email',
                           ),
-
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _passwordController,
@@ -159,12 +168,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     0.6,
                                   ),
                                 ),
-                                onPressed:
-                                    () => setState(
-                                      () =>
-                                          _isPasswordVisible =
-                                              !_isPasswordVisible,
-                                    ),
+                                onPressed: () => setState(() =>
+                                _isPasswordVisible = !_isPasswordVisible),
                               ),
                               border: const OutlineInputBorder(
                                 borderSide: BorderSide(
@@ -181,15 +186,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             style: const TextStyle(color: Colors.white),
-                            validator:
-                                (value) =>
-                                    value != null && value.length >= 6
-                                        ? null
-                                        : 'Min 6 characters',
+                            validator: (value) =>
+                            value != null && value.length >= 6
+                                ? null
+                                : 'Min 6 characters',
                           ),
 
-                          const SizedBox(height: 24),
-
+                          const SizedBox(height: 8),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
@@ -206,8 +209,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(
-                                  color: const Color.fromRGBO(
+                                side: const BorderSide(
+                                  color: Color.fromRGBO(
                                     255,
                                     255,
                                     255,
@@ -216,30 +219,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                             ),
-                            child:
-                                _isLoading
-                                    ? const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    )
-                                    : const Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                            child: _isLoading
+                                ? const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                            )
+                                : const Text(
+                              'Sign In',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                           ),
-
                           const SizedBox(height: 16),
                           TextButton(
-                            onPressed:
-                                () => Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => const SignupScreen(),
-                                  ),
-                                ),
+                            onPressed: () => Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => const SignupScreen(),
+                              ),
+                            ),
                             style: TextButton.styleFrom(
                               foregroundColor: const Color.fromRGBO(
                                 255,
@@ -248,7 +245,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 0.8,
                               ),
                             ),
-                            child: const Text("Don't have an account? Sign Up"),
+                            child:
+                            const Text("Don't have an account? Sign Up"),
                           ),
                         ],
                       ),
