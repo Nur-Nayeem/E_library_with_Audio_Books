@@ -1,11 +1,11 @@
 # audiobook_e_library
 
 Team :
-Nur Mohammad Nayeem (21225103422) , Section-5,  Dept. CSE, BUBT
-Nusrat Jahan Munni (21225103408) , Section-5,  Dept. CSE, BUBT
-Sharmin Akter (21225103410) , Section-5,  Dept. CSE, BUBT
-Shayoni Jahan (21225103419) , Section-5,  Dept. CSE, BUBT
-Maruf Nabil (21225103428) , Section-5,  Dept. CSE, BUBT
+Nur Mohammad Nayeem (21225103422) , Section-5,  Dept. CSE, BUBT.
+Nusrat Jahan Munni (21225103408) , Section-5,  Dept. CSE, BUBT.
+Sharmin Akter (21225103410) , Section-5,  Dept. CSE, BUBT.
+Shayoni Jahan (21225103419) , Section-5,  Dept. CSE, BUBT.
+Maruf Nabil (21225103428) , Section-5,  Dept. CSE, BUBT.
 
 
 
