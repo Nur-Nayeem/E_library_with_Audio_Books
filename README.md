@@ -16,7 +16,6 @@ Maruf Nabil (21225103428) , Section-5,  Dept. CSE, BUBT.
 
 A new Flutter project.  
 <img src="https://res.cloudinary.com/dx43z0uml/image/upload/v1750850247/audio-book_xwgdxf.jpg" width="200" />
-<img src="https://res.cloudinary.com/dx43z0uml/image/upload/v1750850247/audio-book_xwgdxf.jpg" width="200" />
 
 
 ## Getting Started
