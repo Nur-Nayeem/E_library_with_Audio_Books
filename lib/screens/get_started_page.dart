@@ -1,7 +1,10 @@
 import 'package:audiobook_e_library/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart'; // For opening URLs
+import 'package:url_launcher/url_launcher.dart';
+
+import '../auth/screens/auth/login_screen.dart';
+import '../auth/screens/auth/signup_screen.dart'; // For opening URLs
 
 class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({super.key});
@@ -45,6 +48,34 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     }
   }
 
+  Future<void> _markAsSeenAndNavigateToLogin() async {
+    print("Skip button pressed!");
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showGetStarted', false);
+    print("showGetStarted set to false"); // Add this line
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _markAsSeenAndNavigateToSignUp() async {
+    print("Skip button pressed!");
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showGetStarted', false);
+    print("showGetStarted set to false"); // Add this line
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const SignupScreen(),
+        ),
+      );
+    }
+  }
+
   void _nextPage() {
     if (_currentPage < _onboardingData.length - 1) {
       _pageController.nextPage(
@@ -77,7 +108,6 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
     final primaryColor = Theme.of(context).primaryColor;
     final textTheme = Theme.of(context).textTheme;
-
     return Scaffold(
       body: Stack(
         children: [
@@ -147,10 +177,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ElevatedButton(
-                        onPressed: () {
-                          // Navigate to create account screen
-                          Navigator.pushNamed(context, '/signup');
-                        },
+                        onPressed: _markAsSeenAndNavigateToSignUp,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -166,10 +193,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> {
                       ),
                       SizedBox(height: screenHeight * 0.02),
                       OutlinedButton(
-                        onPressed: () {
-                          // Navigate to log in screen
-                          Navigator.pushNamed(context, '/login');
-                        },
+                        onPressed: _markAsSeenAndNavigateToLogin,
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           side: BorderSide(color: primaryColor, width: 1.5),

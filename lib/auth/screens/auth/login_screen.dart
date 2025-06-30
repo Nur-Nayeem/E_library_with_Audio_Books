@@ -46,8 +46,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       final state = ref.read(authProvider);
       if (state is AuthStateAuthenticated) {
+        print("navigate Home");
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('showGetStarted', false);
+        print(prefs);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const BottomNavBar()),
         );

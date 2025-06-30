@@ -74,7 +74,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         _searchResults = _allBooks
             .where((book) =>
         book.bookname.toLowerCase().contains(query.toLowerCase()) ||
-            (book.authorName?.toLowerCase().contains(query.toLowerCase()) ??
+            (book.authorName.toLowerCase().contains(query.toLowerCase()) ??
                 false))
             .toList();
       });

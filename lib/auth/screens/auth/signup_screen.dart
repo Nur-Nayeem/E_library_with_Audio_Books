@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/supabase_config.dart';
+import '../../../screens/bottom_nav_bar.dart';
 import 'login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -56,9 +57,13 @@ class _SignupScreenState extends State<SignupScreen> {
           ]);
 
           if (mounted) {
+            print("navigate Home");
             final prefs = await SharedPreferences.getInstance();
             await prefs.setBool('showGetStarted', false);
-            Navigator.pushReplacementNamed(context, '/home');
+            print(prefs);
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const BottomNavBar()),
+            );
           }
         }
       } on AuthApiException catch (e) {
