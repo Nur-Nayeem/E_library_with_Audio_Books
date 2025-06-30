@@ -1,7 +1,8 @@
 # audiobook_e_library
 
 A new Flutter project.
-![image](https://res.cloudinary.com/dx43z0uml/image/upload/v1750850247/audio-book_xwgdxf.jpg)
+
+<img src="https://res.cloudinary.com/dx43z0uml/image/upload/v1750850247/audio-book_xwgdxf.jpg" width="300"/>
 
 ## Getting Started
 
